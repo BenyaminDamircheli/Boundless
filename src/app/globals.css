@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans&display=swap');
+
+body {
+  background: rgb(10 10 10 / 950);
+  color: #fff;
+}
+
+.gradient-text{
+    background: linear-gradient(to right,#2563eb,#621de1, #2563eb,#ec1947,#b31de1, #2563eb,#ec1947,#b31de1);
+    background-size: 300% 300%;
+    background-clip: text;
+}
+
+
+.bn-container[data-theming-css-variables-demo][data-color-scheme="dark"]{
+  --bn-colors-editor-text: #ffffff;
+  --bn-colors-editor-background: #0a0a0a;
+  --bn-colors-side-menu: #787878;
+  font-family: "DM Sans", sans-serif;
+  z-index: 9999999999;
+
+}
+
+
+@keyframes fadeIn {
+  0% {
+      opacity: 0;
+      
+  }
+  50% {
+      opacity: 0.5;
+  }
+  100% {
+      opacity: 1;
+      
+  }
+}
+
+.node-enter-animation {
+  animation: fadeIn 0.3s ease-out forwards;
+}
