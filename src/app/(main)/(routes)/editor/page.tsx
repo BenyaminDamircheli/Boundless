@@ -1,5 +1,5 @@
 "use client"
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import ReactFlow, { Background, ReactFlowProvider, useNodesState, useEdgesState, addEdge, Connection, Handle, MarkerType } from "reactflow";
 import 'reactflow/dist/style.css';
 import "@blocknote/core/fonts/inter.css";
@@ -7,8 +7,10 @@ import "@blocknote/mantine/style.css";
 import InitialNode from "@/components/customNode";
 import NoteNode from "@/components/noteNode";
 import Navbar1 from "@/components/sidebar";
-import CustomHandle from "@/components/customHandle";
 import FlowTitle from "@/components/flowTitle";
+
+
+
 
 const proOptions = { hideAttribution: true };
 
@@ -24,6 +26,7 @@ const nodeTypes = {
 
 
 const EditorPage = () => {
+
     const [nodes, setNodes, onNodesChange] = useNodesState([
         { id: "1", position: { x: x1 - 100, y: y1 + 100 }, data: { title: 'New Note', status: "In Progress", duedate: "2024-01-01" }, type: 'customNode', isHovered: false, isSelected: false }
     ]);
@@ -119,10 +122,23 @@ const EditorPage = () => {
     const toggleSidebar = () => {
         setIsOpen(!isOpen);
     };
+
+    const [flows, setFlows] = useState([]);
+    useEffect(() => {
+        const getFlows = async () => {
+            const response = await fetch("/api/Flows", {
+                method: "GET",
+            });
+            const data = await response.json();
+            setFlows(data.flows);
+        };
+        getFlows();
+    }, []);
+    
       
     return (
         <>
-        <div className="fixed top-0 left-0 h-full z-[99999]"><Navbar1 isOpen={isOpen} setIsOpen={toggleSidebar}/></div>
+        <div className="fixed top-0 left-0 h-full z-[99999]"><Navbar1 flows={flows} isOpen={isOpen} setIsOpen={toggleSidebar}/></div>
         <div className="flex justify-center items-center z-[99999] text-white shadow-lg"><FlowTitle Sidebar={isOpen} /></div>
             <ReactFlowProvider>
                 <div className="w-[100vw] h-[100vh] bg-neutral-950">
@@ -150,6 +166,7 @@ const EditorPage = () => {
 };
 
 export default EditorPage;
+
 
 
 

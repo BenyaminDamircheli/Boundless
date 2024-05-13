@@ -1,18 +1,22 @@
 import React, { useState } from "react";
 import { ChevronsLeft, ChevronsRight, SquareMenu, Plus, Box, PlusCircle } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
+import { ReactFlow } from "@prisma/client";
 import Item from "./space";
 
-function Navbar1({isOpen, setIsOpen}: {isOpen: boolean, setIsOpen: (isOpen: boolean) => void}){
-
-    
+function Navbar1({isOpen, setIsOpen, flows}: {isOpen: boolean, setIsOpen: (isOpen: boolean) => void, flows: ReactFlow[]}){
+    const router = useRouter();
+    const handleFlowClick = (id: number) => {
+        router.push(`/editor/${id}`);
+    }
 
     function onMouseDown(e: React.MouseEvent<HTMLDivElement, MouseEvent>){
         e.preventDefault();
         e.stopPropagation();
     }
+    
 
     const style = isOpen ? 'h-6 w-6 text-muted-foreground rounded hover:bg-neutral-700 top-3 right-3 cursor-pointer absolute' : 'h-6 w-6 text-muted-foreground rounded hover:bg-neutral-700 top-3 right-3 cursor-pointer fixed';
 
@@ -38,7 +42,9 @@ function Navbar1({isOpen, setIsOpen}: {isOpen: boolean, setIsOpen: (isOpen: bool
             </div>
             <div className={`mt-4 ml-4 ${isOpen ? 'block' : 'hidden'}`}>
                 <p className="text-white font-bold flex items-center gap-2">Spaces</p>
-                <Item onClick={() => {}} label= "Tranformers and Neural Networks" type="space" icon={Box}/>
+                {flows.map((flow) => (
+                    <Item key={flow.id} onClick={() => {handleFlowClick(flow.id)}} label={flow.title} type="flow" icon={Box}/>
+                ))}
             </div>
         </aside>
     )

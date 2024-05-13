@@ -17,7 +17,7 @@ const Header = () => {
                 <SignedOut>
                     <SignInButton mode="modal">
                         <button className="bg-indigo-600 text-white font-bold
-                            px-4 py-1 rounded-md hover:bg-indigo-500 transition-all mr-14 mt-4 text-lg">Log in</button>
+                            px-4 py-1 rounded hover:bg-indigo-500 transition-all mr-14 mt-4 text-lg">Log in</button>
                     </SignInButton>
                 </SignedOut>
                 

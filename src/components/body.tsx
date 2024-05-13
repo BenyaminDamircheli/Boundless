@@ -2,9 +2,13 @@
 import React, { useState, useEffect } from "react";
 import {BackgroundBeams} from "./background-beams";
 import Link from "next/link";
+import { db } from "../lib/db";
+import { useAuth } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 
 const Body = () => {
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,6 +25,24 @@ const Body = () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+  const {userId} = useAuth();
+  const user = useUser();
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(event.target.value);
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const response = await fetch("/api/Flows", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({title: inputValue, userId: userId as string, name: user.user?.fullName})
+    });
+    console.log(response);
+}
 
   return (
     <div>
@@ -31,10 +53,10 @@ const Body = () => {
           <div className="text-center">
             <h1 className="text-6xl font-bold">The Future of Learning is <span className="text-indigo-600">Personalized.</span></h1>
             <p className="text-xl mt-6 mx-auto w-[55%]">Don't waste your time trying to figure out <strong>how to learn what you want to learn</strong>. Focus on exploring your interests with <span className="text-indigo-600 font-bold underline">Boundless, an AI powered learning platform.</span></p>
-            <form className="mt-6 mx-auto w-1/2">
+            <form className="mt-6 mx-auto w-1/2" onSubmit={handleSubmit}>
               <div className="relative mt-2">
-                <input type="text" placeholder="What do you want to learn?" className="h-14 px-4 pr-20 rounded w-full border-1 border-gray-600 bg-neutral-800" />
-                <Link href="/editor"><button className="absolute right-3 inset-y-0 my-auto h-10 w-16 text-white font-bold bg-indigo-600 rounded hover:bg-indigo-500 transition-all">Submit</button></Link>
+                <input type="text" placeholder="What do you want to learn?" className="h-14 px-4 pr-20 rounded w-full border-1 border-gray-600 bg-neutral-800" onChange={handleInputChange} value={inputValue} />
+                <button type="submit" className="absolute right-3 inset-y-0 my-auto h-10 w-16 text-white font-bold bg-indigo-600 rounded hover:bg-indigo-500 transition-all">Submit</button>
               </div>
             </form> 
             <div className="mt-10 mx-auto w-1/2 text-left">
