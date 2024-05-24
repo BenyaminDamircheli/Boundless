@@ -5,11 +5,14 @@ import Link from "next/link";
 import { db } from "../lib/db";
 import { useAuth } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
+import { Loader2, Send } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const Body = () => {
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [inputValue, setInputValue] = useState("");
-
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 0) {
@@ -34,6 +37,7 @@ const Body = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setLoading(true);
     const response = await fetch("/api/Flows", {
         method: "POST",
         headers: {
@@ -41,7 +45,10 @@ const Body = () => {
         },
         body: JSON.stringify({title: inputValue, userId: userId as string, name: user.user?.fullName})
     });
-    console.log(response);
+    const body = await response.json();
+    const id = body.id;
+    console.log(body);
+    router.push(`/editor/${id}`);
 }
 
   return (
@@ -50,24 +57,24 @@ const Body = () => {
           <BackgroundBeams />
         </div>
         <div className="flex items-center justify-center h-screen">
-          <div className="text-center">
-            <h1 className="text-6xl font-bold">The Future of Learning is <span className="text-indigo-600">Personalized.</span></h1>
-            <p className="text-xl mt-6 mx-auto w-[55%]">Don't waste your time trying to figure out <strong>how to learn what you want to learn</strong>. Focus on exploring your interests with <span className="text-indigo-600 font-bold underline">Boundless, an AI powered learning platform.</span></p>
+          <div className="text-center w-[1300px]">
+            <h1 className="text-7xl font-bold">We are entering a new era of <span className="text-indigo-600">information discovery.</span></h1>
+            <p className="text-xl mt-6 mx-auto w-[70%]">Boundless is a <span className="line-through">search</span> <span className="font-bold underline">learning</span> engine. Quickly find what you want to learn, see how concepts relate to eachother, or discover something entirely unexpected, with <span className="font-bold text-indigo-600">Boundless.</span></p>
             <form className="mt-6 mx-auto w-1/2" onSubmit={handleSubmit}>
               <div className="relative mt-2">
-                <input type="text" placeholder="What do you want to learn?" className="h-14 px-4 pr-20 rounded w-full border-1 border-gray-600 bg-neutral-800" onChange={handleInputChange} value={inputValue} />
-                <button type="submit" className="absolute right-3 inset-y-0 my-auto h-10 w-16 text-white font-bold bg-indigo-600 rounded hover:bg-indigo-500 transition-all">Submit</button>
+                <input type="text" placeholder="What do you want to learn?" className="h-14 px-4 pr-20 rounded w-full border-[1px] border-neutral-700 bg-neutral-900" onChange={handleInputChange} value={inputValue} />
+                <button type="submit" className="absolute right-4 inset-y-0 my-auto text-indigo-600 font-bold transition-all">{loading ? <Loader2 className="absolute right-4 inset-y-0 my-auto h-6 w-6 animate-spin text-indigo-700" /> : <Send className="absolute right-4 inset-y-0 my-auto h-5 w-5" />}</button>
               </div>
             </form> 
             <div className="mt-10 mx-auto w-1/2 text-left">
               <h1 className="text-xl font-bold">Not sure what to learn? Try one of these:</h1>
               <div className="grid grid-cols-3 gap-4 mt-4">
-                <div className="bg-neutral-800 h-8 rounded flex items-center justify-center font-bold text-sm hover:bg-neutral-700 cursor-pointer">Neural Networks</div>
-                <div className="bg-neutral-800 h-8 rounded flex items-center justify-center font-bold text-sm hover:bg-neutral-700 cursor-pointer">American History</div>
-                <div className="bg-neutral-800 h-8 rounded flex items-center justify-center font-bold text-sm hover:bg-neutral-700 cursor-pointer">How to Reduce Stress</div>
-                <div className="bg-neutral-800 h-8 rounded flex items-center justify-center font-bold text-sm hover:bg-neutral-700 cursor-pointer">Data Science</div>
-                <div className="bg-neutral-800 h-8 rounded flex items-center justify-center font-bold text-sm hover:bg-neutral-700 cursor-pointer">Programming in Python</div>
-                <div className="bg-neutral-800 h-8 rounded flex items-center justify-center font-bold text-sm hover:bg-neutral-700 cursor-pointer">Neurobiology</div>
+                <div className="bg-neutral-900 h-8 rounded flex items-center justify-center font-bold text-sm border-[1px] border-neutral-700 hover:bg-neutral-950 cursor-pointer shadow-lg">Neural Networks</div>
+                <div className="bg-neutral-900 h-8 rounded flex items-center justify-center font-bold text-sm border-[1px] border-neutral-700 hover:bg-neutral-950 cursor-pointer shadow-lg">American History</div>
+                <div className="bg-neutral-900 h-8 rounded flex items-center justify-center font-bold text-sm border-[1px] border-neutral-700 hover:bg-neutral-950 cursor-pointer shadow-lg">How to Reduce Stress</div>
+                <div className="bg-neutral-900 h-8 rounded flex items-center justify-center font-bold text-sm border-[1px] border-neutral-700 hover:bg-neutral-950 cursor-pointer shadow-lg">Data Science</div>
+                <div className="bg-neutral-900 h-8 rounded flex items-center justify-center font-bold text-sm border-[1px] border-neutral-700 hover:bg-neutral-950 cursor-pointer shadow-lg">Programming in Python</div>
+                <div className="bg-neutral-900 h-8 rounded flex items-center justify-center font-bold text-sm border-[1px] border-neutral-700 hover:bg-neutral-950 cursor-pointer shadow-lg">Neurobiology</div>
               </div>
             </div>
           </div>

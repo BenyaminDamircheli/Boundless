@@ -42,3 +42,10 @@ body {
 .node-enter-animation {
   animation: fadeIn 0.3s ease-out forwards;
 }
+
+
+.blur-background {
+  filter: blur(4px);
+}
+
+

@@ -1,29 +1,26 @@
-import React, { memo, useEffect, useState } from 'react';
-import CustomHandle from './customHandle';
-import { Position } from 'reactflow';
-import NoteEditor from "@/components/blocknote/editor";
-import Link from "next/link";
-import CustomHandle2 from './CustomHandle2';
+import React, {useEffect, useState} from "react";
+import { Handle, Position } from "reactflow";
+import CustomHandle2 from "./CustomHandle2";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-  } from "@/components/ui/tooltip"  
-import { Info } from 'lucide-react';
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+  } from "@/components/ui/dialog"
+  import {
+      Tooltip,
+      TooltipContent,
+      TooltipProvider,
+      TooltipTrigger,
+    } from "@/components/ui/tooltip"  
+  import { Info } from 'lucide-react';
 
-function InitialNode({data, selected}: {data: {title: string, status: string, duedate: string, isHovered: boolean, isSelected: boolean}, selected: boolean}) {
+function SubConceptNode({data, selected}: {data: {title: string, status: string, duedate: string, isHovered: boolean, isSelected: boolean}, selected: boolean}) {
     const [title, setTitle] = useState("");
-    const [summary, setSummary] = useState("Material science is the study of the properties and applications of various materials, including metals, ceramics, polymers, and composites. It involves understanding the atomic, molecular, and microstructural characteristics of materials, and how these influence their overall performance and behavior.");
+    const [summary, setSummary] = useState("Backpropagation is a supervised learning algorithm used to train artificial neural networks by efficiently calculating the gradient of the error function with respect to the network's weights, enabling the network to learn from data.");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [summaryDone, setSummaryDone] = useState(false);
     const boundless = "-... --- ..- -. -.. .-.. . ... ..."
@@ -48,24 +45,24 @@ function InitialNode({data, selected}: {data: {title: string, status: string, du
         }, 20);
         return () => clearInterval(timer);
     }, [data.title]);
-
+    
     useEffect(() => {
         if (isDialogOpen) {
             let i = 0;
-            const ticker = setInterval(() => {
+            const timer = setInterval(() => {
                 if (i < boundless.length) {
                     setSummary(boundless.slice(0, i + 1));
                     i++;
                 } else {
-                    clearInterval(ticker);
+                    clearInterval(timer);
                     setTimeout(() => {
                         i = 0;
-                        const summaryticker = setInterval(() => {
+                        const summarytimer = setInterval(() => {
                             if (i < summary.length) {
                                 setSummary(summary.slice(0, i + 1));
                                 i++;
                             } else {
-                                clearInterval(summaryticker);
+                                clearInterval(summarytimer);
                                 
                             }
                         }, 5);
@@ -74,21 +71,23 @@ function InitialNode({data, selected}: {data: {title: string, status: string, du
             }, 20);
         }
     }, [isDialogOpen, summaryDone]);
-
     return (
         <>
-    <div className={`bg-neutral-800 min-w-[2700px] min-h-[800px] rounded-[12px] relative px-2 border-2 flex justify-center items-center transition-all duration-300 node-enter-animation ${
-            data.isSelected ? 'border-indigo-600' : 'border-indigo-400'
+        <div className={`bg-neutral-800 min-w-[500px] min-h-[400px] max-w-[1000px] max-h-[900px] rounded-[8px] relative px-2 border-2 transition-al flex justify-center items-center duration-300 node-enter-animation ${
+            data.isHovered ? 'cursor-pointer border-orange-600' : 'border-orange-700'
           }`}>
-            <div className='absolute top-4 right-4'>
-                <Dialog onOpenChange={setIsDialogOpen}>
+        
+            <div className=''><CustomHandle2 type="source" position={Position.Top} isHovered={data.isHovered}/></div>
+            <div className=''><CustomHandle2 type="target" position={Position.Bottom} isHovered={data.isHovered}/></div>
+            <div className='p-20 flex items-center justify-center'><h1 className='text-white text-[100px] text-center'>{data.title}</h1></div>
+            <div className='absolute top-4 right-4'><Dialog onOpenChange={setIsDialogOpen}>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger>
                             <DialogTrigger>
                         <div className='flex justify-center items-center gap-2 rounded-full p-2'>
-                            <Info className='w-[110px] h-[110px] text-indigo-500'/>
-                            <p className='text-indigo-500 text-[70px]'>Learn More</p>
+                            <Info className='w-[90px] h-[90px] text-orange-500'/>
+                            <p className='text-orange-500 text-[50px]'>Learn More</p>
                         </div>
                     </DialogTrigger>
                         </TooltipTrigger>
@@ -105,7 +104,7 @@ function InitialNode({data, selected}: {data: {title: string, status: string, du
                             </DialogDescription>
                         </DialogHeader>
                         <div className='text-white break-words'>
-                            <p className='text-neutral-400 text-xs'>Concept summary</p>
+                            <p className='text-neutral-400 text-xs'>concept summary</p>
                             <p className='text-sm my-1'>{summary}</p>
                             
                         </div>
@@ -127,13 +126,14 @@ function InitialNode({data, selected}: {data: {title: string, status: string, du
 
                     </DialogContent>
                 </Dialog>
-            </div>
-            <div className=''><CustomHandle2 type="source" position={Position.Top} isHovered={data.isHovered}/></div>
-            <div className=''><CustomHandle2 type="target" position={Position.Bottom} isHovered={data.isHovered}/></div>
-            <div className='flex justify-center items-center p-[150px]'><h1 className='text-white text-[210px] text-center font-bold'>{title}</h1></div>
-    </div>
+                </div>
+            
+            
+        </div>
     </>
     );
 }
 
-export default InitialNode;
+
+export default SubConceptNode;
+

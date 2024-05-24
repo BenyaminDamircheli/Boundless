@@ -1,12 +1,10 @@
-
 import type { Metadata } from "next";
-import {GeistSans} from 'geist/font/sans';
-import { DM_Sans } from 'next/font/google';
 import { ClerkProvider } from "@clerk/nextjs";
+import { Noto_Sans } from 'next/font/google';
 
 import "./globals.css";
 
-const geistSans = DM_Sans({ subsets: ['latin'] });
+const notosans = Noto_Sans({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,7 +19,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
     <html lang="en">
-      <body className={geistSans.className}>{children}</body>
+      <body className={notosans.className}>{children}</body>
     </html>
     </ClerkProvider>
   );
