@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import Dagre from "@dagrejs/dagre"
+import { Position } from 'reactflow';
 
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { nodes, edges, id } = body;
+        const { nodes, edges, id, quickAnswer } = body;
 
         const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
         const getLayoutedElements = (
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
             edges.forEach((edge) => g.setEdge(edge.source, edge.target));
             nodes.forEach((node) => {
                 if (node.type === 'noteNode') {
-                    g.setNode(node.id, { width: 1000, height: 8000, ranksep: 1000, nodesep: 4000 });
+                    g.setNode(node.id, { width: 1000, height: 8000, ranksep: 0, nodesep: 0 });
                 } else if (node.type === 'customNode') {
                     g.setNode(node.id, { width: 2700, height: 800 });
                 } else if (node.type === 'subConceptNode') {
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
 
         const flow = await db.reactFlow.update({
             where: { id: parseInt(id.toString(), 10) },
-            data: { nodes: getLayoutedElements(nodes, edges).nodes, edges: getLayoutedElements(nodes, edges).edges }
+            data: { nodes: getLayoutedElements(nodes, edges).nodes, edges: getLayoutedElements(nodes, edges).edges, quickAnswer: quickAnswer }
         });
 
         return NextResponse.json({ message: "Flow updated successfully", flow }, { status: 200 });

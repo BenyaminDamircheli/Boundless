@@ -1,19 +1,98 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { UserButton, useUser, useAuth } from "@clerk/nextjs";
 import { ReactFlow } from "@prisma/client";
 import Item from "./space";
 import ItemList from "./itemList";
-import { SquareMenu } from "lucide-react";
+import { SquareMenu, ChevronDown } from "lucide-react";
 import NewConcept from "./newConcept";
 import { useHotkeys } from 'react-hotkeys-hook'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-function Navbar1({isOpen, setIsOpen}: {isOpen: boolean, setIsOpen: (isOpen: boolean) => void}){
+function Navbar1({isOpen, setIsOpen, handleFlowClick}: {isOpen: boolean, setIsOpen: (isOpen: boolean) => void, handleFlowClick: (id: string) => void}){
+    const [nodes, setNodes] = useState<Node[]>([]);
+    const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
+    const [title, setTitle] = useState<string>("");
     const router = useRouter();
-    const handleFlowClick = (id: number) => {
-        router.push(`/editor/${id}`);
+    const searchParams = useSearchParams();
+    const id = searchParams.get('id');
+
+    useEffect(() => {
+        async function fetchNodes(){
+            const response = await fetch(`/api/Flows?id=${id}`);
+            const data = await response.json();
+            console.log("data.flow.nodes.slice(1):", data.flow.nodes.slice(1))
+            setNodes(data.flow.nodes)
+            setTitle(data.flow.title)
+        }
+        fetchNodes();
+    }, [id])
+
+    function toggleCollapse(nodeId: string) {
+        setCollapsedNodes(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(nodeId)) {
+                newSet.delete(nodeId);
+            } else {
+                newSet.add(nodeId);
+            }
+            return newSet;
+        });
+    }
+
+    function generateTOC(nodes: any) {
+        const nodeMap = new Map();
+    
+        // Create a map of nodes by their id for easy lookup
+        nodes.forEach((node: any) => {
+            nodeMap.set(node.id, node);
+        });
+    
+        // Helper function to recursively build the TOC
+        function buildTOC(node: any, index: number = 0) {
+            const isCollapsed = collapsedNodes.has(node.id);
+            const hasSubconcept = nodes.some((childNode: any) => childNode.data.parentNode === node.id);
+            return (
+                <div key={node.id} style={{ paddingLeft: `${node.data.level * 10}px`, animation: `fadeIn 0.1s ease-in ${index * 0.08}s forwards` }} className={`cursor-pointer py-2 opacity-0`}>
+                    {hasSubconcept && <div style={{ display: 'flex', alignItems: 'center' }} className="hover:bg-neutral-700 rounded">
+                        <ChevronDown onClick={() => toggleCollapse(node.id)} className={`transition-transform ${isCollapsed ? 'rotate-90' : ''} w-4 h-4 mr-2 hover:bg-neutral-800 rounded`} />
+                        <div role="button" onClick={() => handleFlowClick(node.id)} className="flex items-center text-white">
+                            {node.data.title}
+                        </div>
+                    </div>}
+                    {!hasSubconcept && 
+                    <div className="ml-4 border-l-2 border-l-neutral-700 hover:bg-neutral-700 text-neutral-300">
+                        <div role="button" onClick={() => handleFlowClick(node.id)} style={{ display: 'flex', alignItems: 'center' }} className="cursor-pointer pl-2">
+                            {node.data.title}
+                        </div>
+                    </div>}
+                    {!isCollapsed && (
+                        <div>
+                            {nodes
+                                .filter((childNode: any) => childNode.data.parentNode === node.id)
+                                .map((childNode: any, childIndex: number) => buildTOC(childNode, index + childIndex + 1))
+                                .sort((a, b) => a.props.style.paddingLeft - b.props.style.paddingLeft)}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Add CSS for fadeIn animation
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes fadeIn {
+                from { opacity: 0}
+                to { opacity: 1}
+            }
+        `;
+        document.head.appendChild(style);
+    
+        // Find all main concept nodes (nodes with a parent)
+        const mainConceptNodes = nodes.filter((node: any) => !node.data.parentNode);
+    
+        // Build TOC for each main concept node
+        return mainConceptNodes.map((mainConceptNode: any) => buildTOC(mainConceptNode));
     }
 
     function onMouseDown(e: React.MouseEvent<HTMLDivElement, MouseEvent>){
@@ -38,7 +117,7 @@ function Navbar1({isOpen, setIsOpen}: {isOpen: boolean, setIsOpen: (isOpen: bool
             >
                 <SquareMenu className="h-6 w-6" />
             </div>)}
-            <aside className={`bg-neutral-900 h-full w-60 overflow-hidden overflow-y-auto absolute top-0 transition-all duration-300 ease-in-out ${sidebarStyle}`}>
+            <aside className={`bg-neutral-900 h-full w-60 overflow-hidden overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-neutral-700 absolute top-0 transition-all duration-300 ease-in-out ${sidebarStyle}`}>
             
                 <div className="flex mt-3 ml-4">
                     
@@ -58,121 +137,14 @@ function Navbar1({isOpen, setIsOpen}: {isOpen: boolean, setIsOpen: (isOpen: bool
                     <NewConcept isOpen={isModalOpen} setIsOpen={setIsModalOpen} />
                 </div>
 
-                <div className="">
-                    <Tabs defaultValue="toc">
-                        <TabsList className="flex-row w-full">
-                            <TabsTrigger value="toc" className={`${isOpen ? 'block' : 'hidden'}`}><p className="text-white font-bold">Table of Contents</p></TabsTrigger>
-                            <TabsTrigger value="history" className={`${isOpen ? 'block' : 'hidden'}`}><p className="text-white font-bold">History</p></TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="toc" className={`mt-4 ml-4 text-sm font-bold bg-neutral-800 border-[1px] border-neutral-800 shadow-lg rounded ${isOpen ? 'block' : 'hidden'}`}>
-                        <ol className="ml-4 pb-10 leading-6 list-decimal mr-4">
-                        <li>Introduction to Neural Networks
-                            <ul className="ml-4 border-l-2 border-neutral-700 pl-2">
-                                <li>Definition and Basics</li>
-                                <li>Historical Context</li>
-                                <li>Applications</li>
-                            </ul>
-                        </li>
-                        <li>Perceptrons and Activation Functions
-                            <ul className="border-l-2 border-neutral-700 pl-2 my-2 mr-4">
-                                <li>Perceptron Model</li>
-                                <li>Activation Functions
-                                    <ul className="border-l-2 border-neutral-700 pl-2 my-2 mr-4">
-                                        <li>Sigmoid</li>
-                                        <li>ReLU</li>
-                                        <li>Tanh</li>
-                                        <li>Softmax</li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </li>
-                        <li>Feedforward Neural Networks
-                            <ul className="border-l-2 border-neutral-700 pl-2 my-2 mr-4">
-                                <li>Architecture</li>
-                                <li>Forward Propagation</li>
-                                <li>Loss Functions
-                                    <ul className="border-l-2 border-neutral-700 pl-2 my-2 mr-4">
-                                        <li>Mean Squared Error</li>
-                                        <li>Cross-Entropy</li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </li>
-                        <li>Backpropagation
-                            <ul className="border-l-2 border-neutral-700 pl-2 my-2 mr-4">
-                                <li>Gradient Descent</li>
-                                <li>Chain Rule</li>
-                                <li>Backpropagation Algorithm</li>
-                            </ul>
-                        </li>
-                        <li>Training Neural Networks
-                            <ul className="border-l-2 border-neutral-700 pl-2 my-2 mr-4">
-                                <li>Data Preparation</li>
-                                <li>Mini-Batch Gradient Descent</li>
-                                <li>Regularization Techniques
-                                    <ul className="border-l-2 border-neutral-700 pl-2 my-2 mr-4">
-                                        <li>L1 and L2 Regularization</li>
-                                        <li>Dropout</li>
-                                    </ul>
-                                </li>
-                                <li>Hyperparameter Tuning</li>
-                            </ul>
-                        </li>
-                        <li>Convolutional Neural Networks (CNNs)
-                            <ul className="border-l-2 border-neutral-700 pl-2 my-2 mr-4">
-                                <li>Convolutional Layers</li>
-                                <li>Pooling Layers</li>
-                                <li>Applications in Image Processing</li>
-                            </ul>
-                        </li>
-                        <li>Recurrent Neural Networks (RNNs)
-                            <ul className="border-l-2 border-neutral-700 pl-2 my-2 mr-4">
-                                <li>Basic RNN Architecture</li>
-                                <li>Long Short-Term Memory (LSTM)</li>
-                                <li>Gated Recurrent Unit (GRU)</li>
-                            </ul>
-                        </li>
-                        <li>Advanced Architectures
-                            <ul className="border-l-2 border-neutral-700 pl-2 my-2 mr-4">
-                                <li>Autoencoders</li>
-                                <li>Generative Adversarial Networks (GANs)</li>
-                                <li>Transformer Models</li>
-                            </ul>
-                        </li>
-                        <li>Optimization Techniques
-                            <ul className="border-l-2 border-neutral-700 pl-2 my-2 mr-4">
-                                <li>Adaptive Learning Rates</li>
-                                <li>Momentum</li>
-                                <li>Adam Optimizer</li>
-                            </ul>
-                        </li>
-                        <li>Deployment and Optimization
-                            <ul className="border-l-2 border-neutral-700 pl-2 my-2 mr-4">
-                                <li>Model Deployment</li>
-                                <li>Model Optimization
-                                    <ul className="border-l-2 border-neutral-700 pl-2 my-2 mr-4">
-                                        <li>Quantization</li>
-                                        <li>Pruning</li>
-                                        <li>Model Compression</li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </li>
-                        <li>Ethical Considerations
-                            <ul className="border-l-2 border-neutral-700 pl-2 my-2 mr-4">
-                                <li>Bias and Fairness</li>
-                                <li>Privacy Concerns</li>
-                                <li>Transparency and Accountability</li>
-                            </ul>
-                        </li>
-                    </ol>
-                        </TabsContent>
-                        <TabsContent value="history">
-                            <div className={`mt-4 ml-4 ${isOpen ? 'block' : 'hidden'}`}>
-                                <ItemList userId={userId} />
-                            </div>
-                        </TabsContent>
-                    </Tabs>
+                <div className={`ml-4 mt-4 text-sm font-bold rounded ${isOpen ? 'block' : 'hidden'}`}>
+                    <div className="sticky top-0 py-2 bg-neutral-900 flex justify-between items-center z-[99999]">
+                        <div className="text-xl text-white mb-2 font-bold mr-4">{title}</div>
+                    </div>
+                    <div className="text-white whitespace-pre-wrap text-xs mr-6">{generateTOC(nodes)}</div>
+                </div>
+                <div className={`mt-4 ml-4 ${isOpen ? 'block' : 'hidden'}`}>
+                    <ItemList userId={userId} />
                 </div>
             </aside>
         </>
@@ -180,8 +152,3 @@ function Navbar1({isOpen, setIsOpen}: {isOpen: boolean, setIsOpen: (isOpen: bool
 }
 
 export default Navbar1;
-
-
-
-
-

@@ -10,7 +10,7 @@ function parseTOC(toc: string, query: string) {
     const firstNode = {
         id: nodeId.toString(),
         position: { x: 0, y: 0 },
-        data: { title: query, status: 'In Progress', duedate: '2024-01-01' },
+        data: { title: query },
         type: 'noteNode'
     };
     nodes.push(firstNode);
@@ -20,14 +20,12 @@ function parseTOC(toc: string, query: string) {
         const level = (line.match(/^\s*/)?.[0].length ?? 0) / 4; // Adjusted for 4 spaces per level
         const title = line.replace(/^\s*[-\d]+\.\s*/, '').replace(/^—/, '').replace(/^-/, '').replace(/^\s*-\s*/, '').trim();
 
-        const node = {
+        const node: any = {
             id: nodeId.toString(),
-            position: { x: 0, y: 0 }, // Default position, can be adjusted as needed
-            data: { title: title, status: 'In Progress', duedate: '2024-01-01' },
+            position: { x: 0, y: 0 }, 
+            data: { title: title, level: level, pageTopic: query},
             type: level === 0 ? 'customNode' : 'subConceptNode',
-            
         };
-        nodes.push(node);
 
         while (parentStack.length > 0 && parentStack[parentStack.length - 1].level >= level) {
             parentStack.pop();
@@ -40,11 +38,13 @@ function parseTOC(toc: string, query: string) {
                 source: nodeId.toString(),
                 target: '0',
                 style: {
-                    strokeWidth: 7, stroke: 'white', zIndex:9999999999
+                    strokeWidth: 7, stroke: 'white', zIndex:9999999999, 
+                    markerStart: 'arrow'
                 }
             });
         } else if (parentStack.length > 0) {
             const parentNodeId = parentStack[parentStack.length - 1].id;
+            node.data.parentNode = parentNodeId.toString();
             edges.push({
                 id: `e${parentNodeId}-${nodeId}`,
                 source: nodeId.toString(),
@@ -55,6 +55,7 @@ function parseTOC(toc: string, query: string) {
             });
         }
 
+        nodes.push(node);
         parentStack.push({ id: nodeId, level: level });
         nodeId++;
     });

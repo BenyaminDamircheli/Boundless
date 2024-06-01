@@ -3,9 +3,13 @@ import Body from "../components/body";
 
 export default function Home() {
   return (
-    <main >
-      <Header />
-      <Body />
+    <main className="">
+        
+        <div className="h-screen overflow-hidden">
+          <Header />
+          <Body />
+        </div>
+
     </main>
   );
 }

@@ -13,39 +13,46 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
 
-const API_KEY = 'sk-proj-fxy6JA8psNtnNZsHHxihT3BlbkFJqnQy7VPNj78kHdW0Iy1X'
-const apiBody = {
-         "model": 'gpt-3.5-turbo-0125',
-         "messages": [{ "role": "system", "content": `
-         Imagine you are a system tasked with helping a user learn a new concept from start to finish. create a hierarchical "table of contents" where there are main concepts and sub-concepts (which may also have sub-concepts), with the main concepts being a numbered list with bullet point subconcepts underneath.
 
-         Here are the rules you MUST FOLLOW:
 
-         - YOUR RESPONSE SHOULD ONLY BE THE TABLE OF CONTENTS, NOTHING ELSE.
 
-         - BE AS COMPREHENSIVE AS POSSIBLE, we want this person to have a proper list of everything they need to learn to master the subject. 
-
-         - THERE MUST BE MAIN CONCEPTS AND SUBCONCEPTS, WHICH ALSO HAVE SUBCONCEPTS.
-
-         - THE MAIN CONCEPTS SHOULD BE A NUMBERED LIST, WHILE THE SUBCONCEPTS ARE INDENTED BULLET POINTS. 4 SPACES PER INDENT LEVEL
-
-         - TRY TO KEEP THE TITLES LESS THAN 35 CHARACTERS. DO NOT GO OVER 10 - 13 MAIN CONCEPTS
-
-         Now do this for Neuroscience
-         ` }],
-         "temperature": 1,
-         "max_tokens": 500,
-         "top_p": 1,
-         "frequency_penalty": 0,
-         "presence_penalty": 0
-}
 
 async function getTOC(query: string) {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+
+    const apiBody = {
+        "model": 'gpt-3.5-turbo-0125',
+        "messages": [{ "role": "system", "content": `
+        Imagine you are a system tasked with helping a user learn a new concept. Create a hierarchical "table of contents" where there are main concepts and sub-concepts (which may also have sub-concepts), with the main concepts being a numbered list with bullet point subconcepts underneath.
+
+        Here are the rules you MUST FOLLOW:
+
+        - USE A MINIMUM OF 600 WORDS IN YOUR RESPONSE!
+
+        - DO NOT INCLUDE ANY INTRODUCTION OR CONCLUSION SECTION IN THE TOC. JUST TECHNICAL CONCEPTS RELATING TO THE QUERY.
+
+        - YOUR RESPONSE SHOULD ONLY BE THE TABLE OF CONTENTS, NOTHING ELSE.
+
+        - BE AS COMPREHENSIVE AS POSSIBLE. GIVE THE USER A BIG LIST OF ALL THE CONCEPTS THEY NEED TO KNOW.
+
+        - THERE MUST BE MULTUPLE MAIN CONCEPTS AND SUBCONCEPTS, WHICH ALSO HAVE SUBCONCEPTS.
+
+        - THE MAIN CONCEPTS SHOULD BE A NUMBERED LIST, WHILE THE SUBCONCEPTS ARE INDENTED BULLET POINTS. 4 SPACES PER INDENT LEVEL
+        
+        - TRY TO KEEP THE TITLES LESS THAN 30 CHARACTERS.
+
+        Now do this for: ${query}
+        ` }],
+        "temperature": 1,
+        "max_tokens": 1000,
+        "top_p": 1,
+        "frequency_penalty": 0,
+        "presence_penalty": 0
+}
+const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + API_KEY,
+            'Authorization': 'Bearer ' + process.env.NEXT_PUBLIC_OPENAI_API_KEY,
         },
         body: JSON.stringify(apiBody),
         
@@ -60,6 +67,36 @@ async function getTOC(query: string) {
     }
 }
 
+    async function getQuickAnswer(query: string) {
+        const apiBody = {
+        "model": 'gpt-3.5-turbo',
+        "messages": [{ "role": "system", "content": `You are a concept summarizer and speak like Wikipedia. You should give a quick answer/description of any topic given to you. You should not converse with them, just output an introduction of the following topic. FINISH YOUR RESPONSE WITHIN 100 TOKENS!. Now do this for: ${query} `}],
+        "temperature": 1,
+        "max_tokens": 120,
+        "top_p": 1,
+        "frequency_penalty": 0,
+        "presence_penalty": 0
+    }
+        console.log('fetching quick answer');
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+            },
+            body: JSON.stringify(apiBody),
+        
+        });
+        const data = await response.json();
+        console.log(data);
+        if (data.choices && data.choices.length > 0) {
+            return data.choices[0].message.content;
+        } else {
+            console.error('Unexpected API response:', data);
+            throw new Error('Failed to retrieve quick answer');
+        }
+    }
+
 function parseTOC(toc: string, query: string) {
     const lines = toc.split('\n').filter(line => line.trim() !== '');
     const nodes: any[] = [];
@@ -71,7 +108,7 @@ function parseTOC(toc: string, query: string) {
     const firstNode = {
         id: nodeId.toString(),
         position: { x: 0, y: 0 },
-        data: { title: query, status: 'In Progress', duedate: '2024-01-01' },
+        data: { title: query },
         type: 'noteNode'
     };
     nodes.push(firstNode);
@@ -81,14 +118,12 @@ function parseTOC(toc: string, query: string) {
         const level = (line.match(/^\s*/)?.[0].length ?? 0) / 4; // Adjusted for 4 spaces per level
         const title = line.replace(/^\s*[-\d]+\.\s*/, '').replace(/^—/, '').replace(/^-/, '').replace(/^\s*-\s*/, '').trim();
 
-        const node = {
+        const node: any = {
             id: nodeId.toString(),
-            position: { x: 0, y: 0 }, // Default position, can be adjusted as needed
-            data: { title: title, status: 'In Progress', duedate: '2024-01-01' },
+            position: { x: 0, y: 0 }, 
+            data: { title: title, level: level, pageTopic: query},
             type: level === 0 ? 'customNode' : 'subConceptNode',
-            
         };
-        nodes.push(node);
 
         while (parentStack.length > 0 && parentStack[parentStack.length - 1].level >= level) {
             parentStack.pop();
@@ -101,11 +136,13 @@ function parseTOC(toc: string, query: string) {
                 source: nodeId.toString(),
                 target: '0',
                 style: {
-                    strokeWidth: 7, stroke: 'white', zIndex:9999999999
+                    strokeWidth: 7, stroke: 'white', zIndex:9999999999, 
+                    markerStart: 'arrow'
                 }
             });
         } else if (parentStack.length > 0) {
             const parentNodeId = parentStack[parentStack.length - 1].id;
+            node.data.parentNode = parentNodeId.toString();
             edges.push({
                 id: `e${parentNodeId}-${nodeId}`,
                 source: nodeId.toString(),
@@ -116,6 +153,7 @@ function parseTOC(toc: string, query: string) {
             });
         }
 
+        nodes.push(node);
         parentStack.push({ id: nodeId, level: level });
         nodeId++;
     });
@@ -150,8 +188,7 @@ export default function NewConcept({ isOpen, setIsOpen }: { isOpen: boolean; set
       const OpenAIResponse = await getTOC(inputValue);
       const toc = parseTOC(OpenAIResponse, inputValue);
       const { nodes, edges } = toc;
-      console.log("Nodes:", nodes); // Debugging log
-      console.log("Edges:", edges); // Debugging log
+      const QuickAnswer = await getQuickAnswer(inputValue);
 
       const response = await fetch("/api/Flows", {
         method: "POST",
@@ -181,7 +218,8 @@ export default function NewConcept({ isOpen, setIsOpen }: { isOpen: boolean; set
         body: JSON.stringify({
           id: id,
           nodes: nodes,
-          edges: edges
+          edges: edges,
+          quickAnswer: QuickAnswer
         })
       });
 

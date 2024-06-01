@@ -5,7 +5,7 @@ import { stringify } from "querystring";
 
 export async function POST(req: NextRequest) {
     try {
-      const { title, userId, name} = await req.json();
+      const { title, userId, name, quickAnswer} = await req.json();
 
       const existingUser = await db.user.findUnique({
         where: {

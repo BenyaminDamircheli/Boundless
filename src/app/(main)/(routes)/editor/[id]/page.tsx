@@ -40,8 +40,8 @@ const EditorPage = () => {
     const searchParams = useSearchParams();
     const [dataLoaded, setDataLoaded] = useState(false);
     const [layouted, setLayouted] = useState(false); 
-    const [nodes, setNodes, onNodesChange] = useNodesState([]);
-    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+    const [nodes, setNodes ] = useNodesState([]);
+    const [edges, setEdges] = useEdgesState([]);
     
     useEffect(() => {
         const fetchData = async () => {
@@ -66,30 +66,7 @@ const EditorPage = () => {
         fetchData();
     }, []);
 
-    const [animationIndex, setAnimationIndex] = useState(0);
-    const [animationDone, setAnimationDone] = useState(false);
-
-    useEffect(() => {
-        if (dataLoaded && !animationDone) {
-            const interval = setInterval(() => {
-                setNodes((currentNodes) => {
-                    if (animationIndex < currentNodes.length) {
-                        return currentNodes.map((node, index) => ({
-                            ...node,
-                            hidden: index > animationIndex ? true : false,
-                        }));
-                    } else {
-                        clearInterval(interval);
-                        setAnimationDone(true);
-                        return currentNodes;
-                    }
-                });
-                setAnimationIndex((prevIndex) => prevIndex + 1);
-            }, 0.5); // Adjust time as needed for animation speed
-
-            return () => clearInterval(interval);
-        }
-    }, [dataLoaded, animationIndex, animationDone]);
+    
     
     const reactFlowWrapper = useRef(null);
     const [reactFlowInstance, setReactFlowInstance] = useState(null);
@@ -99,33 +76,70 @@ const EditorPage = () => {
             reactFlowInstance.fitView();
         }
     }, [reactFlowInstance, layouted]);
+    const [isOpen, setIsOpen] = useState(true);
+    const toggleSidebar = () => {
+        setIsOpen(!isOpen);
+    };
 
 
-  const handleNodeClick = (event:any, node:any) => {
-    const zoomLevel = reactFlowInstance?.getZoom();
-    if (zoomLevel < 0.2 && (node.type === "customNode" || node.type === "subConceptNode")) {
-      const x = node.position.x + 1600;
-      const y = node.position.y + 300;
-      const zoom = 0.18;
-      reactFlowInstance?.setCenter(x, y, { zoom, duration: 1000 });
-    } else if (zoomLevel < 0.2 && node.type === "noteNode") {
-      const x = node.position.x + 5500;
-      const y = node.position.y + 2000;
-      const zoom = 0.08;
-      reactFlowInstance?.setCenter(x, y, { zoom, duration: 1000 });
-    }
-  };
+    const handleNodeClick = (event: any, node: any) => {
+        const zoomLevel = reactFlowInstance?.getZoom();
+        if (zoomLevel < 0.2 && (node.type === "customNode")) {
+            if (isOpen) {
+            const x = node.position.x + 1300;
+            const y = node.position.y + 300;
+            const zoom = 0.18;
+            reactFlowInstance?.setCenter(x, y, { zoom, duration: 1000 });
+            }
+            else if(!isOpen){
+                const x = node.position.x + 1000;
+                const y = node.position.y + 300;
+                const zoom = 0.18;
+                reactFlowInstance?.setCenter(x, y, { zoom, duration: 1000 });  
+            }
+        } else if (zoomLevel < 0.2 && node.type === "noteNode") {
+            if (isOpen){
+            const x = node.position.x + 5500;
+            const y = node.position.y + 2000;
+            const zoom = 0.06;
+            reactFlowInstance?.setCenter(x, y, { zoom, duration: 1000 });
+        } else{
+            const x = node.position.x + 7700;
+            const y = node.position.y + 2000;
+            const zoom = 0.06;
+            reactFlowInstance?.setCenter(x, y, { zoom, duration: 1000 });
+        }
+        } else {
+             if (isOpen){
+                const x = node.position.x + 200
+                const y = node.position.y + 200;
+                reactFlowInstance?.setCenter(x, y, { zoom: 0.2, duration: 1000 });
+            } else{
+                const x = node.position.x + 620;
+                const y = node.position.y + 200;
+                const zoom = 0.2;
+                reactFlowInstance?.setCenter(x, y, { zoom, duration: 1000 });
+            }
+            
+        }
+    };
 
-const [isOpen, setIsOpen] = useState(false);
-const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-};
+    const handleToNodeClick = (nodeId: string) => {
+        const node = nodes.find(n => n.id === nodeId);
+        console.log(node)
+        if (node) {
+            handleNodeClick(null, node);
+        }
+    };
+
+
+
 
 
   
 return (
     <>
-    <div className="fixed top-0 left-0 h-full z-[99999]"><Navbar1 isOpen={isOpen} setIsOpen={toggleSidebar}/></div>
+    <div className="fixed top-0 left-0 h-full z-[99999]"><Navbar1 isOpen={isOpen} setIsOpen={toggleSidebar} handleFlowClick={handleToNodeClick}/></div>
     <div className={`fixed ${isOpen ? 'right-[40%]' : 'right-[45%]'} transition-all duration-100 ease-in-out top-3 z-[99999] text-white shadow-lg`}><FlowTitle Sidebar={isOpen} /></div>
         <ReactFlowProvider>
             <div ref={reactFlowWrapper} className="w-[100vw] h-[100vh] bg-neutral-950">
@@ -134,14 +148,12 @@ return (
                     onNodeClick={handleNodeClick}
                     nodes={nodes}
                     edges={edges}
-                    onNodesChange={onNodesChange}
-                    onEdgesChange={onEdgesChange}
                     proOptions={proOptions}
                     nodeTypes={nodeTypes}
                     maxZoom={0.35}
                     minZoom={0.009}
-                    defaultViewport={defaultViewport}
                     onInit={setReactFlowInstance}
+                    fitView={true}
                     
                 ></ReactFlow>
             </div>
