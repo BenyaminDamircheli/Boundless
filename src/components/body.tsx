@@ -187,15 +187,15 @@ const handleSubmit = async (event: React.FormEvent) => {
         </div>
         <div className="flex items-center justify-center h-screen">
           <div className="text-center w-[1300px]">
-            <h1 className="text-7xl font-bold text-black">We are entering a new era of <span className="text-indigo-600">information discovery.</span></h1>
-            <p className="text-lg mt-6 mx-auto w-[70%] text-black">Boundless is a <span className="">learning</span> engine. Quickly find what you want to learn, see how concepts relate to each other, or discover something entirely new, with <span className="font-bold text-indigo-600">Boundless.</span></p>
+            <h1 className="text-7xl font-bold text-black">Finding things to learn has <span className="text-indigo-600">never been easier.</span></h1>
+            <p className="text-lg mt-6 mx-auto w-[70%] text-black">Boundless is a <span className="">learning</span> engine. Quickly find what you want to learn, see how concepts relate to each other, or discover something entirely unexpected.</p>
             <form className="mt-6 mx-auto w-[700px] border border-neutral-700 bg-white rounded shadow-lg" onSubmit={handleSubmit}>
               <div className="relative my-1 h-[60px] px-2 pr-20 rounded w-full">
                 <Input type="text" placeholder="I want to learn about..." className="h-full w-full px-2 text-black font-bold text-md bg-white border-none focus:outline-none rounded-lg placeholder:text-gray-500" onChange={handleInputChange} value={inputValue} />
                 <button type="submit" className="absolute right-4 bottom-4 text-indigo-600 font-bold transition-all">{loading ? <Loader2 className="h-7 w-7 animate-spin text-indigo-700" /> : <ArrowRight className="h-6 w-6" />}</button>
               </div>
               <div className="flex justify-between border-t border-neutral-700 rounded-b-[5px]">
-                <button type="button" className="text-black border-t border-neutral-700 rounded-md w-full py-2 hover:bg-neutral-200 active:bg-neutral-300">Default</button>
+                <button type="button" className= "border-t border-neutral-700 rounded-md w-full py-2 bg-indigo-600 text-white active:bg-neutral-300">Default</button>
                 <button type="button" className="text-black border-t border-l border-neutral-700 rounded-md w-full py-2 hover:bg-neutral-200 active:bg-neutral-300 flex items-center justify-center gap-2">
                   <div className="bg-indigo-700 text-white rounded px-1 text-xs font-bold">Pro</div>
                   Turbo

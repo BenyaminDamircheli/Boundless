@@ -1,134 +1,46 @@
+const OpenAI = require("openai")
 
-function parseTOC(toc: string, query: string) {
-    const lines = toc.split('\n').filter(line => line.trim() !== '');
-    const nodes: any[] = [];
-    const edges: any[] = [];
-    let nodeId = 0;
-    const parentStack: { id: number, level: number }[] = [];
+const openai = new OpenAI(
+    {
+        apiKey:'sk-proj-fxy6JA8psNtnNZsHHxihT3BlbkFJqnQy7VPNj78kHdW0Iy1X',
+    }
+);
 
-    // Add the very first node as a noteNode with the title being the query
-    const firstNode = {
-        id: nodeId.toString(),
-        position: { x: 0, y: 0 },
-        data: { title: query },
-        type: 'noteNode'
-    };
-    nodes.push(firstNode);
-    nodeId++;
+async function main() {
+    const stream = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo-0125',
+    messages: [{ "role": "system", "content": `
+    Imagine you are a system tasked with helping a user learn a new concept. Create a hierarchical "table of contents" where there are main concepts and sub-concepts (which may also have sub-concepts), with the main concepts being a numbered list with bullet point subconcepts underneath.
 
-    lines.forEach((line) => {
-        const level = (line.match(/^\s*/)?.[0].length ?? 0) / 4; // Adjusted for 4 spaces per level
-        const title = line.replace(/^\s*[-\d]+\.\s*/, '').replace(/^—/, '').replace(/^-/, '').replace(/^\s*-\s*/, '').trim();
+    Here are the rules you MUST FOLLOW:
 
-        const node: any = {
-            id: nodeId.toString(),
-            position: { x: 0, y: 0 }, 
-            data: { title: title, level: level, pageTopic: query},
-            type: level === 0 ? 'customNode' : 'subConceptNode',
-        };
+    - YOU MUST USE 400 WORDS IN YOUR RESPONSE, YOU MUST FIT EVERY CONCEPT WITHIN THIS LIMIT.
 
-        while (parentStack.length > 0 && parentStack[parentStack.length - 1].level >= level) {
-            parentStack.pop();
-        }
+    - DON'T INCLUDE GENERAL CONCEPTS LIKE "DEFINITIONS" OR "EXAMPLES", JUST STRAIGHT TECHNICAL CONCEPTS.
 
-        if (level === 0) {
-            // Connect all main concept nodes to the first noteNode
-            edges.push({
-                id: `e0-${nodeId}`,
-                source: nodeId.toString(),
-                target: '0',
-                style: {
-                    strokeWidth: 7, stroke: 'white', zIndex:9999999999, 
-                    markerStart: 'arrow'
-                }
-            });
-        } else if (parentStack.length > 0) {
-            const parentNodeId = parentStack[parentStack.length - 1].id;
-            node.data.parentNode = parentNodeId.toString();
-            edges.push({
-                id: `e${parentNodeId}-${nodeId}`,
-                source: nodeId.toString(),
-                target: parentNodeId.toString(),
-                style: {
-                    strokeWidth: 7, stroke: 'white', zIndex:9999999999
-                }
-            });
-        }
+    - DO NOT INCLUDE ANY INTRODUCTION OR CONCLUSION SECTION IN THE TOC. JUST TECHNICAL CONCEPTS RELATING TO THE QUERY. 
 
-        nodes.push(node);
-        parentStack.push({ id: nodeId, level: level });
-        nodeId++;
-    });
+    - TRY TO KEEP THE TITLES LESS THAN 30 CHARACTERS.
 
-    console.log(nodes);
-    console.log(edges);
+    - BE AS COMPREHENSIVE AS POSSIBLE. GIVE THE USER A BIG LIST OF ALL THE CONCEPTS THEY NEED TO KNOW.
+
+    - THERE MUST BE MULTUPLE MAIN CONCEPTS AND SUBCONCEPTS, WHICH ALSO HAVE SUBCONCEPTS.
+
+    - THE MAIN CONCEPTS SHOULD BE A NUMBERED LIST, WHILE THE SUBCONCEPTS ARE INDENTED BULLET POINTS. 4 SPACES PER INDENT LEVEL
     
-    return { nodes, edges };
+
+    Now do this for: neuroscience
+    ` }],
+    temperature: 1,
+    max_tokens: 650,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+        stream: true,
+    });
+    for await (const chunk of stream) {
+        process.stdout.write(chunk.choices[0]?.delta?.content || "");
+    }
 }
 
-parseTOC(`
-1. Introduction to Neural Networks
-   - Definition and Basics
-   - Historical Context
-   - Applications
-   
-2. Perceptrons and Activation Functions
-   - Perceptron Model
-   - Activation Functions
-     - Sigmoid
-     - ReLU
-     - Tanh
-     - Softmax
-
-3. Feedforward Neural Networks
-   - Architecture
-   - Forward Propagation
-   - Loss Functions
-     - Mean Squared Error
-     - Cross-Entropy
-
-4. Backpropagation
-   - Gradient Descent
-   - Chain Rule
-   - Backpropagation Algorithm
-
-5. Training Neural Networks
-   - Data Preparation
-   - Mini-Batch Gradient Descent
-   - Regularization Techniques
-     - L1 and L2 Regularization
-     - Dropout
-   - Hyperparameter Tuning
-   
-6. Convolutional Neural Networks (CNNs)
-   - Convolutional Layers
-   - Pooling Layers
-   - Applications in Image Processing
-
-7. Recurrent Neural Networks (RNNs)
-   - Basic RNN Architecture
-   - Long Short-Term Memory (LSTM)
-   - Gated Recurrent Unit (GRU)
-
-8. Advanced Architectures
-   - Autoencoders
-   - Generative Adversarial Networks (GANs)
-   - Transformer Models
-
-9. Optimization Techniques
-   - Adaptive Learning Rates
-   - Momentum
-   - Adam Optimizer
-
-10. Deployment and Optimization
-    - Model Deployment
-    - Model Optimization
-      - Quantization
-      - Pruning
-      - Model Compression
-
-11. Ethical Considerations
-    - Bias and Fairness
-    - Privacy Concerns
-    - Transparency and Accountability
-`, "Transformers and Neural Networks");
+main();

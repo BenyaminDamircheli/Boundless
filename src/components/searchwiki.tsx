@@ -4,7 +4,11 @@ import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from 'uuid';
 import { useState } from "react";
-import { revalidatePath } from "next/cache";
+import {
+    HoverCard,
+    HoverCardContent,
+    HoverCardTrigger,
+  } from "@/components/ui/hover-card"
 
 
 export default function WikiSearch(){
@@ -49,15 +53,37 @@ export default function WikiSearch(){
                             <p className="text-xs">Find what you want to learn quickly</p>
                         </div>
                         <div className="flex items-center">
-                            <button type="button" className="text-black border-t-2 border-l-2 border-neutral-700 rounded-l px-1 py-0.5 hover:bg-neutral-200 active:bg-neutral-300 text-sm">Default</button>
-                            <button type="button" className="text-black border-t-2 border-l-2 border-neutral-700 px-1 py-0.5 hover:bg-neutral-200 active:bg-neutral-300 flex items-center justify-center gap-1 text-sm">
-                                <div className="bg-indigo-700 text-white rounded px-1 text-xs font-bold">Pro</div>
-                                Turbo
-                            </button>
-                            <button type="button" className="text-black border-t-2 border-l-2 border-r-2 border-neutral-700 rounded-r px-1 py-0.5 hover:bg-neutral-200 active:bg-neutral-300 flex items-center justify-center gap-1 text-sm">
-                                <div className="bg-indigo-700 text-white rounded px-1 text-xs font-bold">Pro</div>
-                                Research
-                            </button>
+                            <button type="button" className="text-white border-t-2 border-l-2 border-neutral-700 rounded-l px-1 py-0.5 bg-indigo-600 active:bg-neutral-300 text-sm">Default</button>
+                            <HoverCard>
+                                <HoverCardTrigger>
+                                    <button type="button" className="text-black border-t-2 border-l-2 border-neutral-700 px-1 py-0.5 hover:bg-neutral-200 active:bg-neutral-300 flex items-center justify-center gap-1 text-sm">
+                                        <div className="bg-indigo-700 text-white rounded px-1 text-xs font-bold">Pro</div>
+                                        Turbo
+                                    </button>
+                                </HoverCardTrigger>
+                                <HoverCardContent className="bg-neutral-800 text-white rounded px-2 py-1 text-xs w-[200px]">
+                                    <p className="text-xs font-bold underline">Turbo</p>
+                                    <div className="mt-2 flex-col space-y-2">
+                                        <p className="text-[10px]">Turbo is <span className="font-bold">3x</span> smarter and <span className="font-bold">5x</span> faster than our default model.</p>
+                                    </div>
+                                    <p className="text-[8px] mt-2 italic">Currently unavailable, but let us know if you want this!</p>
+                                </HoverCardContent>
+                            </HoverCard>
+                            <HoverCard>
+                                <HoverCardTrigger>
+                                    <button type="button" className="text-black border-t-2 border-l-2 border-r-2 rounded-r border-neutral-700 px-1 py-0.5 hover:bg-neutral-200 active:bg-neutral-300 flex items-center justify-center gap-1 text-sm">
+                                        <div className="bg-indigo-700 text-white rounded px-1 text-xs font-bold">Pro</div>
+                                        Research
+                                    </button>
+                                </HoverCardTrigger>
+                                <HoverCardContent className="bg-neutral-800 text-white rounded px-2 py-1 text-xs w-[200px]">
+                                    <p className="text-xs font-bold underline">Research</p>
+                                    <div className="mt-2 flex-col space-y-2">
+                                        <p className="text-[10px]">Research is <span className="font-bold">5x</span> smarter than our default model.</p>
+                                    </div>
+                                    <p className="text-[8px] mt-2 italic">Currently unavailable, but let us know if you want this!</p>
+                                </HoverCardContent>
+                            </HoverCard>
                         </div>
                     </div>
                 </div>
@@ -73,7 +99,7 @@ export default function WikiSearch(){
                 <div className="flex flex-row justify-start mt-3 items-center gap-2 overflow-x-auto no-scrollbar fade-edges w-[500px] border-[1px] border-neutral-300 min-h-[40px] rounded">
                     {query.map((q, index) => (
                         <div className="flex flex-row my-1" key={index}>
-                            <div className="mx-3 min-w-[100px] text-center text-xs p-1 rounded bg-neutral-200">{q}</div>
+                            <div className="mx-3 min-w-[100px] text-center text-xs p-1 rounded bg-neutral-200 truncate">{q}</div>
                         </div>
                     ))}
                 </div>

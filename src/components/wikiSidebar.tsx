@@ -1,16 +1,13 @@
 import { ArrowLeftFromLine, ArrowRightFromLine, ChevronDown } from "lucide-react";
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { TracingBeam } from "./ui/tracingBeam";
-
 
 export default function WikiSidebar({ isOpen, setIsOpen, Nodes, query }: { isOpen: boolean, setIsOpen: (isOpen: boolean) => void , Nodes:any, query: string}) {
   const [nodes, setNodes] = useState(Nodes);
   const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
-  const [visibleNodes, setVisibleNodes] = useState<any[]>([]);
 
   useEffect(() => {
-    setVisibleNodes(Nodes);
+    setNodes(Nodes);
   }, [Nodes]);
 
   function toggleCollapse(nodeId: string) {
@@ -23,6 +20,15 @@ export default function WikiSidebar({ isOpen, setIsOpen, Nodes, query }: { isOpe
       }
       return newSet;
     });
+  }
+
+  function handleItemClick(nodeId: string) {
+    const element = document.getElementById(`node-${nodeId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.classList.add('focused');
+      setTimeout(() => element.classList.remove('focused'), 3000); 
+    }
   }
 
   function generateTOC(nodes: any) {
@@ -48,7 +54,7 @@ export default function WikiSidebar({ isOpen, setIsOpen, Nodes, query }: { isOpe
                 <ChevronDown className={`transition-transform ${isCollapsed ? 'rotate-90' : ''} w-4 h-4`} />
               )}
             </div>
-            <a className={`text-neutral-800 hover:underline cursor-pointer text-xs ${hasSubconcept ? 'font-bold' : ''}`}>{node.data.title}</a>
+            <a onClick={() => handleItemClick(node.id)} className={`text-neutral-800 hover:underline cursor-pointer text-xs ${hasSubconcept ? 'font-bold' : ''}`}>{node.data.title}</a>
           </div>
           {!isCollapsed && (
             <div>
@@ -67,7 +73,7 @@ export default function WikiSidebar({ isOpen, setIsOpen, Nodes, query }: { isOpe
   }
 
   return (
-    <aside className={`w-[250px] sticky h-full bg-none transform transition-transform pb-8 duration-100 ${isOpen ? 'translate-x-0' : '-translate-x-[215px] border-r border-t border-b border-neutral-300 shadow-lg'}`}>
+    <aside className={`w-[250px] sticky top-0 h-full bg-none transform transition-transform pb-8 duration-100 ${isOpen ? 'translate-x-0' : '-translate-x-[215px] border-r border-t border-b border-neutral-300 shadow-lg'}`}>
       <div className="flex flex-row sticky top-2 transition-all ">
         <div className="border-l border-neutral-300 border-[1px]"/>
         <div className="px-3 text-sm text-neutral-800 max-w-64">
@@ -82,7 +88,7 @@ export default function WikiSidebar({ isOpen, setIsOpen, Nodes, query }: { isOpe
           </div>
           {/* TOC Format Start */}
           <div className="flex flex-col mt-2">
-            {generateTOC(visibleNodes)}
+            {generateTOC(nodes)}
           </div>
           {/* TOC Format End */}
         </div>
@@ -90,4 +96,3 @@ export default function WikiSidebar({ isOpen, setIsOpen, Nodes, query }: { isOpe
     </aside>
   );
 }
-
