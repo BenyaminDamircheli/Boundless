@@ -1,3 +1,4 @@
+import { db } from '@/lib/db';
 import { NextResponse, NextRequest } from 'next/server';
 import {OpenAI} from "openai"
 
@@ -15,7 +16,7 @@ async function getTOC(query: string) {
         
             Here are the rules you MUST FOLLOW:
 
-            - AFTER EVERY CONCEPT, INCLUDING SUBCONCEPTS, MARK THEM WITH "<END>" AT THE END OF THE CONCEPT. MAKE SURE TO STILL MAKE THEM HEIRARCHICAL WITH CONCEPTS AND SUBCONCEPTS.
+            - AFTER EVERY YOU REACH THE END OF EACH TITLE/SUBTITLE, ADD "<END>".
 
             - NEVER CONVERSE WITH THE USER. JUST OUTPUT THE TABLE OF CONTENTS.
 
@@ -23,7 +24,7 @@ async function getTOC(query: string) {
 
             - EVERY TITLE (ESPECIALLY THE ONES WITH NO CHILDREN) MUST BE SPECIFIC ENOUGH TO WHERE YOU COULD FIND A GOOD IMAGE ABOUT IT, DO NOT REPEAT TITLES, EVEN IN DIFFERENT SECTIONS.
         
-            - YOU MUST USE 450 WORDS IN YOUR RESPONSE, YOU MUST FIT EVERY MAJOR CONCEPT WITHIN THIS LIMIT.
+            - YOU MUST USE 2 WORDS IN YOUR RESPONSE, YOU MUST FIT EVERY MAJOR CONCEPT WITHIN THIS LIMIT.
         
             - DON'T INCLUDE GENERAL CONCEPTS LIKE "DEFINITIONS" OR "EXAMPLES", JUST STRAIGHT TECHNICAL CONCEPTS.
         
@@ -40,7 +41,7 @@ async function getTOC(query: string) {
             `
         }],
         temperature: 1,
-        max_tokens: 800,
+        max_tokens: 300,
         top_p: 1,
         frequency_penalty: 0,
         presence_penalty: 0,
@@ -58,7 +59,19 @@ export const POST = async (req: NextRequest) => {
     if (req.method !== 'POST') {
         return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
     }
-    const { query } = await req.json();
+    const { query, id } = await req.json();
+    const existingWiki = await db.wiki.findUnique({
+        where: {
+            id: id
+        }
+    })
+
+    if (existingWiki) {
+        console.log("Returning cached data");
+        return NextResponse.json({nodes: existingWiki.nodes});
+    }
+
+
     const TOCStream = await getTOC(query);
 
     const encoder = new TextEncoder();

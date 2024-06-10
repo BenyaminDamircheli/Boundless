@@ -9,155 +9,7 @@ import { Loader2, Send, ArrowBigRight, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Input } from "./ui/input";
 import { v4 as uuidv4 } from 'uuid';
-
-async function getTOC(query: string) {
-
-  const apiBody = {
-      "model": 'gpt-3.5-turbo-0125',
-      "messages": [{ "role": "system", "content": `
-      Imagine you are a system tasked with helping a user learn a new concept. Create a hierarchical table of contents where there are main concepts and sub-concepts (which may also have sub-concepts), with the main concepts being a numbered list with bullet point subconcepts underneath.
-
-      Here are the rules you MUST FOLLOW:
-
-      - USE A MINIMUM OF 500 WORDS IN YOUR RESPONSE!
-
-      - DO NOT INCLUDE ANY INTRODUCTION OR CONCLUSION SECTION IN THE TOC. JUST TECHNICAL CONCEPTS RELATING TO THE QUERY.
-
-      - YOUR RESPONSE SHOULD ONLY BE THE TABLE OF CONTENTS, NOTHING ELSE.
-
-      - BE AS COMPREHENSIVE AS POSSIBLE. GIVE THE USER A BIG LIST OF ALL THE CONCEPTS THEY NEED TO KNOW.
-
-      - THERE MUST BE MULTUPLE MAIN CONCEPTS AND SUBCONCEPTS, WHICH ALSO HAVE SUBCONCEPTS.
-
-      - THE MAIN CONCEPTS SHOULD BE A NUMBERED LIST, WHILE THE SUBCONCEPTS ARE INDENTED BULLET POINTS. 4 SPACES PER INDENT LEVEL
-      
-      - TRY TO KEEP THE TITLES LESS THAN 30 CHARACTERS.
-
-      Now do this for: ${query}
-      ` }],
-      "temperature": 1,
-      "max_tokens": 800,
-      "top_p": 1,
-      "frequency_penalty": 0,
-      "presence_penalty": 0
-}
-const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-      },
-      body: JSON.stringify(apiBody),
-      
-  });
-  const data = await response.json();
-  console.log(data);
-  if (data.choices && data.choices.length > 0) {
-      return data.choices[0].message.content;
-  } else {
-      console.error('Unexpected API response:', data);
-      throw new Error('Failed to retrieve table of contents');
-  }
-}
-
-  async function getQuickAnswer(query: string) {
-      const apiBody = {
-      "model": 'gpt-3.5-turbo',
-      "messages": [{ "role": "system", "content": `You are a concept summarizer and speak like Wikipedia. You should give a quick answer/description of any topic given to you. You should not converse with them, just output an introduction of the following topic. FINISH YOUR RESPONSE WITHIN 100 TOKENS!. Now do this for: ${query} `}],
-      "temperature": 1,
-      "max_tokens": 120,
-      "top_p": 1,
-      "frequency_penalty": 0,
-      "presence_penalty": 0
-  }
-      console.log('fetching quick answer');
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-          },
-          body: JSON.stringify(apiBody),
-      
-      });
-      const data = await response.json();
-      console.log(data);
-      if (data.choices && data.choices.length > 0) {
-          return data.choices[0].message.content;
-      } else {
-          console.error('Unexpected API response:', data);
-          throw new Error('Failed to retrieve quick answer');
-      }
-  }
-
-function parseTOC(toc: string, query: string) {
-  const lines = toc.split('\n').filter(line => line.trim() !== '');
-  const nodes: any[] = [];
-  const edges: any[] = [];
-  let nodeId = 0;
-  const parentStack: { id: number, level: number }[] = [];
-
-  // Add the very first node as a noteNode with the title being the query
-  const firstNode = {
-      id: nodeId.toString(),
-      position: { x: 0, y: 0 },
-      data: { title: query },
-      type: 'noteNode'
-  };
-  nodes.push(firstNode);
-  nodeId++;
-
-  lines.forEach((line) => {
-      const level = (line.match(/^\s*/)?.[0].length ?? 0) / 4; // Adjusted for 4 spaces per level
-      const title = line.replace(/^\s*[-\d]+\.\s*/, '').replace(/^—/, '').replace(/^-/, '').replace(/^\s*-\s*/, '').trim();
-
-      const node: any = {
-          id: nodeId.toString(),
-          position: { x: 0, y: 0 }, 
-          data: { title: title, level: level, pageTopic: query},
-          type: level === 0 ? 'customNode' : 'subConceptNode',
-      };
-
-      while (parentStack.length > 0 && parentStack[parentStack.length - 1].level >= level) {
-          parentStack.pop();
-      }
-
-      if (level === 0) {
-          // Connect all main concept nodes to the first noteNode
-          edges.push({
-              id: `e0-${nodeId}`,
-              source: nodeId.toString(),
-              target: '0',
-              style: {
-                  strokeWidth: 7, stroke: 'white', zIndex:9999999999, 
-                  markerStart: 'arrow'
-              }
-          });
-      } else if (parentStack.length > 0) {
-          const parentNodeId = parentStack[parentStack.length - 1].id;
-          node.data.parentNode = parentNodeId.toString();
-          edges.push({
-              id: `e${parentNodeId}-${nodeId}`,
-              source: nodeId.toString(),
-              target: parentNodeId.toString(),
-              style: {
-                  strokeWidth: 7, stroke: 'white', zIndex:9999999999
-              }
-          });
-      }
-
-      nodes.push(node);
-      parentStack.push({ id: nodeId, level: level });
-      nodeId++;
-  });
-
-  console.log(nodes);
-  console.log(edges);
-  
-  return { nodes, edges };
-}
-
-
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@radix-ui/react-hover-card";
 
 
 const Body = () => {
@@ -174,11 +26,22 @@ const Body = () => {
 const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const searchQuery = inputValue.trim();
+    const searchQueryCap = Capitalize(searchQuery);
     if (searchQuery) {
         const searchId = uuidv4(); // Using timestamp as a unique search ID
-        router.push(`/wiki?q=${encodeURIComponent(searchQuery)}&search_context=${encodeURIComponent(searchQuery)}&id=${searchId}`);
+        router.push(`/wiki?q=${encodeURIComponent(searchQueryCap)}&search_context=${encodeURIComponent(searchQueryCap)}&id=${searchId}`);
     }
 }
+
+function Capitalize(str: string) {
+  return str.replace(/\b\w/g, (l) => l.toUpperCase());
+}
+
+
+const handleSuggestionClick = (suggestion: string) => {
+  const searchId = uuidv4();
+  router.push(`/wiki?q=${encodeURIComponent(suggestion)}&search_context=${encodeURIComponent(suggestion)}&id=${searchId}`);
+};
 
   return (
     <div className="bg-white">
@@ -195,26 +58,63 @@ const handleSubmit = async (event: React.FormEvent) => {
                 <button type="submit" className="absolute right-4 bottom-4 text-indigo-600 font-bold transition-all">{loading ? <Loader2 className="h-7 w-7 animate-spin text-indigo-700" /> : <ArrowRight className="h-6 w-6" />}</button>
               </div>
               <div className="flex justify-between border-t border-neutral-700 rounded-b-[5px]">
-                <button type="button" className= "border-t border-neutral-700 rounded-md w-full py-2 bg-indigo-600 text-white active:bg-neutral-300">Default</button>
-                <button type="button" className="text-black border-t border-l border-neutral-700 rounded-md w-full py-2 hover:bg-neutral-200 active:bg-neutral-300 flex items-center justify-center gap-2">
-                  <div className="bg-indigo-700 text-white rounded px-1 text-xs font-bold">Pro</div>
-                  Turbo
-                </button>
-                <button type="button" className="text-black border-t border-l border-neutral-700 rounded-md w-full py-2 hover:bg-neutral-200 active:bg-neutral-300 flex items-center justify-center gap-2">
-                  <div className="bg-indigo-700 text-white rounded px-1 text-xs font-bold">Pro</div>
-                  Research
-                </button>
+              <HoverCard>
+                  <HoverCardTrigger className="w-full">
+                    <button type="button" className="border-t border-l border-neutral-700 rounded-md w-full py-2 bg-indigo-600 text-white  flex items-center justify-center gap-2">
+                      Default
+                    </button>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="bg-neutral-800 text-white rounded px-2 py-1 text-xs w-[200px]">
+                    <p className="text-xs font-bold underline">Default</p>
+                    <div className="mt-2 flex-col space-y-2">
+                      <p className="text-[10px]">Default is our base model that delivers excellent results, <span className="font-bold text-indigo-400">for free!</span></p>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
+                <HoverCard>
+                  <HoverCardTrigger className="w-full">
+                    <button type="button" className="text-black border-t border-l border-neutral-700 rounded-md w-full py-2 hover:bg-neutral-200 active:bg-neutral-300 flex items-center justify-center gap-2">
+                      <div className="bg-indigo-700 text-white rounded px-1 text-xs font-bold">Pro</div>
+                      Turbo
+                    </button>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="bg-neutral-800 text-white rounded px-2 py-1 text-xs w-[200px]">
+                  <p className="text-xs font-bold underline">Turbo</p>
+                     <div className="mt-2 flex-col space-y-2">
+                        <p className="text-[10px]">Turbo is <span className="font-bold">3x</span> smarter and <span className="font-bold">5x</span> faster than our default model.</p>
+                      </div>
+                  <p className="text-[8px] mt-2 italic">Currently unavailable, but let us know if you want this!</p>
+                  </HoverCardContent>
+                </HoverCard>
+                <HoverCard>
+                  <HoverCardTrigger className="w-full">
+                    <button type="button" className="text-black border-t border-l border-neutral-700 rounded-md w-full py-2 hover:bg-neutral-200 active:bg-neutral-300 flex items-center justify-center gap-2">
+                      <div className="bg-indigo-700 text-white rounded px-1 text-xs font-bold">Pro</div>
+                      Research
+                    </button>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="bg-neutral-800 text-white rounded px-2 py-1 text-xs w-[200px]">
+                    <p className="text-xs font-bold underline">Research</p>
+                    <div className="mt-2 flex-col space-y-2">
+                      <p className="text-[10px]">Research is <span className="font-bold">5x</span> smarter than our default model.<span className="font-bold text-indigo-400"> It also supports searching with images!</span></p>
+                    </div>
+                    <p className="text-[8px] mt-2 italic">Currently unavailable, but let us know if you want this!</p>
+                  </HoverCardContent>
+                </HoverCard>
               </div>
             </form>
             <div className="mt-10 mx-auto w-1/2 text-left">
               <h1 className="text-xl font-bold text-black">Not sure what to learn? Try one of these:</h1>
               <div className="grid grid-cols-3 gap-4 mt-4">
-                <div className="bg-neutral-100 h-8 rounded flex items-center justify-center font-bold text-sm border-[1px] border-neutral-700 hover:bg-neutral-200 cursor-pointer shadow-lg text-black">Neural Networks</div>
-                <div className="bg-neutral-100 h-8 rounded flex items-center justify-center font-bold text-sm border-[1px] border-neutral-700 hover:bg-neutral-200 cursor-pointer shadow-lg text-black">American History</div>
-                <div className="bg-neutral-100 h-8 rounded flex items-center justify-center font-bold text-sm border-[1px] border-neutral-700 hover:bg-neutral-200 cursor-pointer shadow-lg text-black">How to Reduce Stress</div>
-                <div className="bg-neutral-100 h-8 rounded flex items-center justify-center font-bold text-sm border-[1px] border-neutral-700 hover:bg-neutral-200 cursor-pointer shadow-lg text-black">Data Science</div>
-                <div className="bg-neutral-100 h-8 rounded flex items-center justify-center font-bold text-sm border-[1px] border-neutral-700 hover:bg-neutral-200 cursor-pointer shadow-lg text-black">Programming in Python</div>
-                <div className="bg-neutral-100 h-8 rounded flex items-center justify-center font-bold text-sm border-[1px] border-neutral-700 hover:bg-neutral-200 cursor-pointer shadow-lg text-black">Neurobiology</div>
+                {["Neural Networks", "American History", "Jet Engines", "Data Science", "Programming in Python", "Neuroscience"].map((suggestion) => (
+                  <div
+                    key={suggestion}
+                    className="bg-neutral-100 h-8 rounded flex items-center justify-center font-bold text-sm border-[1px] border-neutral-700 hover:bg-neutral-200 cursor-pointer shadow-lg text-black"
+                    onClick={() => handleSuggestionClick(suggestion)}
+                  >
+                    {suggestion}
+                  </div>
+                ))}
               </div>
             </div>
           </div>

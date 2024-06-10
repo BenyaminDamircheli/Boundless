@@ -1,7 +1,6 @@
 import { ChevronDown, Info } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { TracingBeam } from "./ui/tracingBeam";
-import Popover from "./popover";
+
 import { useRouter, useSearchParams } from "next/navigation";
 import { v4 as uuidv4 } from 'uuid';
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -23,8 +22,27 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
     const searchParams = useSearchParams();
     const boundless = "-... --- ..- -. -.. .-.. . ... ..."
     const context = searchParams.get('q');
+    const id = searchParams.get('id');
     const [storedContext, setStoredContext] = useState(context);
 
+    useEffect(() => {
+        nodes.forEach(node => {
+            const storedImage = localStorage.getItem(`nodeImage_${id}_${node.id}`);
+            if (storedImage) {
+                setNodeImages((prev) => ({ ...prev, [node.id]: storedImage }));
+            }
+        });
+    }, [id]);
+    useEffect(() => {
+        setSearchCount((prevCount) => {
+            const newCount = prevCount + 1;
+            if (newCount >= 5) { // Change this number to set the search limit
+                localStorage.clear();
+                return 0;
+            }
+            return newCount;
+        });
+    }, [id]);
 
     useEffect(() => {
         processedNodes.current.clear();
@@ -35,7 +53,6 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
 
     useEffect(() => {
         setDisplayedNodes(nodes);
-        setNodesUpdated(true); // Set nodesUpdated to true when nodes are updated
     }, [nodes]);
 
     useEffect(() => {
@@ -55,33 +72,36 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
     }, [nodes]);
 
     useEffect(() => {
-        const fetchImageForNode = async (node) => {
+        const fetchImageForNode = async (node: any) => {
             if (node && !nodeImages[node.id]) {
                 try {
-                    // const response = await fetch("https://api.tavily.com/search", {
-                    //     method: "POST",
-                    //     headers: {
-                    //         "Content-Type": "application/json",
-                    //     },
-                    //     body: JSON.stringify({
-                    //         api_key: "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",
-                    //         query: `${node.data.title} as it relates to ${node.data.parentTitle} and ${context}`,
-                    //         search_depth: "basic",
-                    //         include_answer: false,
-                    //         include_images: true,
-                    //         include_raw_content: false,
-                    //         max_results: 5,
-                    //     }),
-                    // });
-                    // const data = await response.json();
-                    // setNodeResources((prev) => ({ ...prev, [node.id]: data.results }));
-                    // if (data.images && data.images.length > 0) {
-                    //     const imageUrl = data.images[Math.floor(Math.random() * 3)];
-                    //     setNodeImages((prev) => ({ ...prev, [node.id]: imageUrl }));
-                    // }
-                    if (node.data.hasChildren === false){
-                    console.log(`fetching images for ${node.data.title}`);
-                    }
+                    /*
+                    const response = await fetch("https://api.tavily.com/search", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                api_key: "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",
+                                query: `${node.data.title} as it relates to ${node.data.parentTitle} and ${context}`,
+                                search_depth: "basic",
+                                include_answer: false,
+                                include_images: true,
+                                include_raw_content: false,
+                                max_results: 5,
+                            }),
+                        });
+                        const data = await response.json();
+                        setNodeResources((prev) => ({ ...prev, [node.id]: data.results }));
+                        if (data.images && data.images.length > 0) {
+                            const imageUrl = data.images[Math.floor(Math.random() * 2)];
+                            setNodeImages((prev) => ({ ...prev, [node.id]: imageUrl }));
+                            localStorage.setItem(`nodeImage_${id}_${node.id}`, imageUrl);
+                        }
+                    */
+                   if (!node.data.hasChildren){
+                    console.log(`fetching image for ${node.data.title}`)
+                   }
                 } catch (error) {
                     console.error('Failed to fetch image:', error);
                 }
@@ -91,7 +111,7 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
         if (newNode) {
             fetchImageForNode(newNode);
         }
-    }, [newNode]);
+    }, [newNode,]);
   
     const toggleCollapsed = (nodeId: string) => {
         setCollapsedNodeStates((prev) => {
@@ -225,7 +245,7 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
             const resources = nodeResources[node.id] || [];
             if (!hasChildren) {
               return (
-                <div id={`node-${node.id}`} key={node.id} style={{ minWidth: '150px', minHeight: '150px', marginTop: '0.5rem', marginLeft: '1.25rem', marginRight: '1.25rem' }} className="scroll-p-64 scroll-m-64 outline-offset-4 mb-4 target:outline target:outline-4 target:outline-indigo-500 bg-white transition-all duration-75 rounded-[2px] flex flex-col ">
+                <div id={`node-${node.id}`} key={node.id + "-" + level} style={{ minWidth: '150px', minHeight: '150px', marginTop: '0.5rem', marginLeft: '1.25rem', marginRight: '1.25rem' }} className="scroll-p-64 scroll-m-64 outline-offset-4 mb-4 target:outline target:outline-4 target:outline-indigo-500 bg-white transition-all duration-75 rounded-[2px] flex flex-col ">
                   <div className="flex flex-col justify-between items-start">
                     <button onClick={() => onClick(node.data.title)} className="transition-all duration-100 text-[0.8rem] font-medium pb-0.5 whitespace-pre-wrap pl-1 leading-[1] text-start text-black group">
                       <span className="text-indigo-700 underline hidden group-hover:inline">deeper search on: </span>
@@ -261,9 +281,9 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
                                         ))}
                                     </div>}
                                     
-                                    <div className="flex flex-row shadow-lg justify-start items-center flex-wrap pt-[0.15rem] border border-neutral-300 rounded bg-white">
+                                    <div className="flex flex-row shadow-lg justify-start items-center flex-wrap pt-[0.15rem] border rounded bg-white">
                                         <div className="h-fit w-[550px]">
-                                            <a href=""><img src={nodeImage} alt="" className="" style={{ width: '100%', height: 'auto' }} /></a>
+                                            <img src={nodeImage} alt="" className="fade-in" style={{ width: '100%', height: 'auto' }}/>
                                         </div>
                                     </div>
                                 </DialogContent>
@@ -275,6 +295,7 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
               );
             }
             return (
+            <div id="parent-div">
               <div id={`node-${node.id}`} key={node.id} className={`bg-white relative w-fit h-fit mb-4 border shadow-sm rounded-[3px] mx-2 `}>
                 <div style={{ top: 0 + level*25, zIndex: 18 - level }} className="scroll-p-32 scroll-m-32 outline-offset-4 sticky transition-colors duration-100 border-b-[1.5px] bg-zinc-100 border-neutral-200 flex flex-col w-full">
                   <div className="flex flex-row items-end justify-between gap-1">
@@ -304,11 +325,12 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
                   </div>
                 )}
               </div>
+              </div>
             );
           });
       };
   
-    return <>{renderNodes(null, 0)}</>;
+    return <div>{renderNodes(null, 0)}</div>;
   }
 
 

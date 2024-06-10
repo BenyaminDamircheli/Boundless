@@ -2,7 +2,7 @@ import { ArrowLeftFromLine, ArrowRightFromLine, ChevronDown } from "lucide-react
 import React, { useState, useEffect } from "react";
 import { TracingBeam } from "./ui/tracingBeam";
 
-export default function WikiSidebar({ isOpen, setIsOpen, Nodes, query }: { isOpen: boolean, setIsOpen: (isOpen: boolean) => void , Nodes:any, query: string}) {
+export default function WikiSidebar({ Nodes, query }: { Nodes:any, query: string}) {
   const [nodes, setNodes] = useState(Nodes);
   const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
 
@@ -47,7 +47,7 @@ export default function WikiSidebar({ isOpen, setIsOpen, Nodes, query }: { isOpe
       const hasSubconcept = nodes.some((childNode: any) => childNode?.data.parentNode === node.id);
 
       return (
-        <div key={node.id} className={`flex flex-col mt-4 ${!isOpen ? 'opacity-0' : ''}`}>
+        <div key={node.id} className={`flex flex-col mt-4`}>
           <div className="flex flex-row items-center" style={{paddingLeft: `${level * 20}px`}}>
             <div role="button" tabIndex={0} className="hover:bg-neutral-200 rounded" onClick={() => toggleCollapse(node.id)}>
               {hasSubconcept && (
@@ -73,18 +73,12 @@ export default function WikiSidebar({ isOpen, setIsOpen, Nodes, query }: { isOpe
   }
 
   return (
-    <aside className={`w-[250px] sticky top-0 h-full bg-none transform transition-transform pb-8 duration-100 ${isOpen ? 'translate-x-0' : '-translate-x-[215px] border-r border-t border-b border-neutral-300 shadow-lg'}`}>
+    <aside className={`w-[250px] sticky top-0 h-full bg-none transform transition-transform pb-8 duration-100`}>
       <div className="flex flex-row sticky top-2 transition-all ">
         <div className="border-l border-neutral-300 border-[1px]"/>
         <div className="px-3 text-sm text-neutral-800 max-w-64">
           <div className="flex flex-row justify-between items-center gap-8">
             <h1 className="font-bold text-[0.9rem] text-neutral-800 truncate overflow-ellipsis whitespace-nowrap">{query}</h1>
-            {isOpen && (
-              <div role="button" tabIndex={0} className="hover:bg-neutral-200 p-[1px] rounded" onClick={() => setIsOpen(!isOpen)}><ArrowLeftFromLine className="w-5 h-5" /></div>
-            )}
-            {!isOpen && (
-              <div role="button" tabIndex={0} className="hover:bg-neutral-200 p-[1px] rounded" onClick={() => setIsOpen(!isOpen)}><ArrowRightFromLine className="w-6 h-6" /></div>
-            )}
           </div>
           {/* TOC Format Start */}
           <div className="flex flex-col mt-2">

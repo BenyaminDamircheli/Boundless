@@ -1,4 +1,4 @@
-import { Network, Search, X } from "lucide-react";
+import { Download, Network, Search, X } from "lucide-react";
 import { Input } from "./ui/input";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
@@ -9,31 +9,75 @@ import {
     HoverCardContent,
     HoverCardTrigger,
   } from "@/components/ui/hover-card"
+import html2canvas from "html2canvas";
+import {jsPDF} from "jspdf";
 
 
 export default function WikiSearch(){
     const [inputValue, setInputValue] = useState('');
     const searchParams = useSearchParams();
+    const search = searchParams.get('q');
     const query = searchParams.getAll('search_context');
+    const id = searchParams.get('id');
     const router = useRouter();
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(event.target.value);
     };
+    const onRemoveContext = (q: string) => {
+        const filteredContext = query.filter((context) => context !== q);
+        const updatedSearchContext = filteredContext.map(encodeURIComponent).join('&search_context=');
+        const newUrl = `/wiki?q=${search}&search_context=${updatedSearchContext}&id=${id}`;
+        router.push(newUrl);
+    };
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const searchQuery = inputValue.trim();
+        const searchQueryCap = Capitalize(searchQuery);
         setInputValue('');
         if (searchQuery) {
             const searchParams = new URLSearchParams(window.location.search);
             const existingSearchContexts = searchParams.getAll('search_context');
-            const updatedSearchContexts = [...existingSearchContexts, searchQuery];
+            const updatedSearchContexts = [...existingSearchContexts, searchQueryCap];
             const searchId = uuidv4(); // Using UUID as a unique search ID
-            const newUrl = `/wiki?q=${encodeURIComponent(searchQuery)}&search_context=${updatedSearchContexts.map(encodeURIComponent).join('&search_context=')}&id=${searchId}`;
+            const newUrl = `/wiki?q=${encodeURIComponent(searchQueryCap)}&search_context=${updatedSearchContexts.map(encodeURIComponent).join('&search_context=')}&id=${searchId}`;
             router.push(newUrl);
             
            
+        }
+    };
+
+    function Capitalize(str: string) {
+        return str.replace(/\b\w/g, (l) => l.toUpperCase());
+      }
+
+    const onExport = async () => {
+        const mainWikiElement = document.getElementById('main-wiki');
+        if (mainWikiElement) {
+            const canvas = await html2canvas(mainWikiElement, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const imgProps = pdf.getImageProperties(imgData);
+            const imgWidth = pdfWidth;
+            const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pdfHeight;
+
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pdfHeight;
+            }
+
+            pdf.save('main-wiki.pdf');
         }
     };
 
@@ -97,9 +141,20 @@ export default function WikiSearch(){
             <div className="flex flex-col justify-start items-center mt-6">
                 <p className="text-xs font-medium antialiased">Search Context</p>
                 <div className="flex flex-row justify-start mt-3 items-center gap-2 overflow-x-auto no-scrollbar fade-edges w-[500px] border-[1px] border-neutral-300 min-h-[40px] rounded">
-                    {query.map((q, index) => (
+                    {query.length > 1 && query.map((q, index) => (
                         <div className="flex flex-row my-1" key={index}>
-                            <div className="mx-3 min-w-[100px] text-center text-xs p-1 rounded bg-neutral-200 truncate">{q}</div>
+                            <div className="mx-3 min-w-[100px] text-center flex justify-between items-center gap-2 p-1 rounded bg-neutral-200 truncate">
+                                <p className="text-xs ml-1">{q}</p>
+                                <button onClick={() => onRemoveContext(q)}><X className="w-3 h-3 mr-1"/></button>
+                            </div>
+                        </div>
+                    ))}
+                    {query.length === 1 && query.map((q, index) => (
+                        <div className="flex flex-row my-1" key={index}>
+                            <div className="mx-3 min-w-[100px] text-center flex justify-between items-center gap-2 p-1 rounded bg-neutral-200 truncate">
+                                <p className="text-xs ml-1">{q}</p>
+                                <button onClick={() => onClearContext()}><X className="w-3 h-3 mr-1"/></button>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -107,9 +162,9 @@ export default function WikiSearch(){
                     <button onClick={onClearContext} className="text-xs text-neutral-500"><span className="text-xs text-neutral-500 hover:underline">clear context</span></button>
                 </div>
             </div>
-            <div role="button" className="flex justify-between items-center bg-indigo-700 hover:bg-indigo-600 gap-2 rounded text-white p-2 text-xs antialiased font-bold mt-6">
-                <Network className="w-3 h-3"/>
-                graph view
+            <div role="button" onClick={onExport} className="flex justify-between items-center bg-indigo-600 hover:bg-indigo-500 gap-2 rounded text-white p-2 text-xs antialiased font-bold mt-6">
+                <Download className="w-3 h-3"/>
+                Export
             </div>
         </div>
     )

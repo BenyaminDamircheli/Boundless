@@ -18,32 +18,19 @@ datasource db {
 model User {
   id      String    @id @default(uuid())
   name    String
-  reactFlows  ReactFlow[]
   wikis Wiki[]
 }
 
-model ReactFlow {
-  id      Int    @id @default(autoincrement())
-  title   String
-  flow    Json
-  nodes   Json[] @default([])
-  edges   Json[] @default([])
-  quickAnswer String @default("")
-  userId  String
-  user    User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
 
 model Wiki {
   id      String    @id @default(uuid())
   title   String
+  url     String
   nodes   Json[] @default([])
   quickAnswer String @default("")
   userId  String
   user    User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 

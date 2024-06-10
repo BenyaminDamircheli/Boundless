@@ -8,6 +8,8 @@ import WikiSidebar from "@/components/wikiSidebar";
 import Wiki from "@/components/wiki";
 import WikiSearch from "@/components/searchwiki";
 import { useSearchParams } from "next/navigation";
+import { db } from "@/lib/db";
+import { useUser } from "@clerk/nextjs";
 
 type TocType = {
     nodes: any[];
@@ -39,7 +41,6 @@ function parseTOC(toc: string, query: string) {
         }
 
         if (level === 0) {
-            // Connect all main concept nodes to the first noteNode
             edges.push({
                 id: `e0-${nodeId}`,
                 source: nodeId.toString(),
@@ -52,7 +53,7 @@ function parseTOC(toc: string, query: string) {
         } else if (parentStack.length > 0) {
             const parentNodeId = parentStack[parentStack.length - 1].id;
             node.data.parentNode = parentNodeId.toString();
-            nodes[parentNodeId].data.hasChildren = true; // Set hasChildren to true for the parent node
+            nodes[parentNodeId].data.hasChildren = true; 
             edges.push({
                 id: `e${parentNodeId}-${nodeId}`,
                 source: nodeId.toString(),
@@ -68,6 +69,9 @@ function parseTOC(toc: string, query: string) {
         nodeId++;
     });
 
+    nodes.forEach((node) => {
+        node.data.hasChildren = nodes.some((childNode) => childNode.data.parentNode === node.id);
+    });
     return { nodes, edges };
 }
 export default function WikiPage() {
@@ -75,9 +79,14 @@ export default function WikiPage() {
     const [quickAnswer, setQuickAnswer] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const searchParams = useSearchParams();
-    const query = searchParams.get('q') || ''; // Ensure query is a string
+    const query = searchParams.get('q') || '';
     const [isOpen, setIsOpen] = useState(true);
     const context = searchParams.getAll('search_context');
+    const id = searchParams.get('id');
+    const user = useUser();
+    const userid = user?.user?.id;
+
+    
 
     useEffect(() => {
         async function fetchData() {
@@ -87,34 +96,53 @@ export default function WikiPage() {
                     setToc(JSON.parse(cachedTOC));
                     setIsLoading(false);
                     return;
-                }else{
-                const response = await fetch('/api/fetchData', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ query:query}),
-                });
+                } else {
+                    const response = await fetch(`/api/getWiki?id=${id}`);
+                    if (response.status === 200) {
+                        const data = await response.json();
+                        console.log(data);
+                        if (data.nodes) {
+                            setToc({ nodes: data.nodes, edges: [] });
+                            setIsLoading(false);
+                            return;
+                        }
+                    }
 
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    const response2 = await fetch('/api/fetchData', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ query: query, id: id }),
+                    });
+
+                    if (!response2.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    const reader = response2.body?.getReader();
+                    const decoder = new TextDecoder();
+                    let content = '';
+                    let parsedTOC = { nodes: [], edges: [] };
+
+                    while (true) {
+                        const { done, value } = await reader?.read() || {};
+                        if (done) break;
+                        content += decoder.decode(value, { stream: true });
+                        parsedTOC = parseTOC(content, query);
+                        setToc(parsedTOC);
+                    }
+
+                    await fetch('/api/saveWiki', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ query: query, id: id, url: window.location.href, userId: userid, nodes: parsedTOC.nodes }),
+                    });
+
+                    localStorage.setItem(`toc_${window.location}`, JSON.stringify(parsedTOC));
                 }
-
-                const reader = response.body?.getReader();
-                const decoder = new TextDecoder();
-                let content = '';
-                let parsedTOC = { nodes: [], edges: [] };
-
-                while (true) {
-                    const { done, value } = await reader?.read() || {};
-                    if (done) break;
-                    content += decoder.decode(value, { stream: true });
-                    parsedTOC = parseTOC(content, query); // Update parsedTOC with each chunk
-                    setToc(parsedTOC); // Update toc state with each chunk
-                }
-
-                localStorage.setItem(`toc_${window.location}`, JSON.stringify(parsedTOC));
-            }
 
             } catch (error) {
                 console.error('Failed to fetch data:', error);
@@ -168,7 +196,7 @@ export default function WikiPage() {
             fetchQuickAnswer();
             setIsLoading(false);
         }
-    }, [query]);
+    }, [query, id]);
 
     const toggleSidebar = () => {
         setIsOpen(!isOpen);

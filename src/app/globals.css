@@ -12,7 +12,7 @@
     background-clip: text;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -28,7 +28,22 @@
 }
 
 .fade-in {
-  animation: fadeIn 0.5s ease-in-out;
+  animation: fadeIn 0s ease-in-out;
+}
+
+.history-panel {
+  position: fixed;
+  right: -350px; /* Start off-screen */
+  transition: right 0.1s ease-in-out;
+}
+.history-panel.open {
+  right: 0; 
+}
+
+.history-scrollbar{
+  scrollbar-width: 3px;
+  scroll-behavior: smooth;
+  scrollbar-gutter: none;
 }
 
 @keyframes fadeIn {
