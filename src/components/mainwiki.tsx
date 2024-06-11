@@ -8,7 +8,6 @@ import { DialogHeader } from "./ui/dialog";
 
 
 export default function MainWiki({ nodes }: { nodes: any[] }) {
-    const [collapsedNodes, setCollapsedNodes] = useState(new Set());
     const [displayedNodes, setDisplayedNodes] = useState(nodes);
     const [collapsedNodeStates, setCollapsedNodeStates] = useState<{ [key: string]: boolean }>({});
     const [nodeStates, setNodeStates] = useState<{ [key: string]: { clicked: boolean, loading: boolean, quickSummary: string, boundlessText: string } }>({});
@@ -73,8 +72,10 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
 
     useEffect(() => {
         const fetchImageForNode = async (node: any) => {
-            if (node && !nodeImages[node.id]) {
+            if (node) {
                 try {
+                    
+                   if (!node.data.hasChildren) {
                     /*
                     const response = await fetch("https://api.tavily.com/search", {
                             method: "POST",
@@ -82,7 +83,7 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
                                 "Content-Type": "application/json",
                             },
                             body: JSON.stringify({
-                                api_key: "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",
+                                api_key: process.env.NEXT_PUBLIC_TAVILY_API_KEY,
                                 query: `${node.data.title} as it relates to ${node.data.parentTitle} and ${context}`,
                                 search_depth: "basic",
                                 include_answer: false,
@@ -99,19 +100,23 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
                             localStorage.setItem(`nodeImage_${id}_${node.id}`, imageUrl);
                         }
                     */
-                   if (!node.data.hasChildren){
-                    console.log(`fetching image for ${node.data.title}`)
                    }
+                   
                 } catch (error) {
                     console.error('Failed to fetch image:', error);
                 }
             }
         };
 
-        if (newNode) {
+        if (newNode && nodes.length < 10) {
             fetchImageForNode(newNode);
         }
-    }, [newNode,]);
+        if (nodes.length > 10) {
+            nodes.forEach(node => {
+                fetchImageForNode(node);
+            });
+        }
+    }, [newNode, id, context]);
   
     const toggleCollapsed = (nodeId: string) => {
         setCollapsedNodeStates((prev) => {
@@ -263,7 +268,7 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
                                         )}
                                     </div>
                                 </DialogTrigger>
-                                <DialogContent className="bg-white text-black rounded w py-2 px-4 border-neutral-300 border-[1px] max-h-[800px] overflow-auto">
+                                <DialogContent className="bg-white text-black rounded w py-2 px-4 border-neutral-700 border-2 max-h-[800px] overflow-auto">
                                     <DialogHeader>
                                         <DialogTitle className="text-[30px]">{node.data.title}</DialogTitle>
                                     </DialogHeader>

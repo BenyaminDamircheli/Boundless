@@ -1,9 +1,11 @@
+// For a feature I am working on that I may add in the future. Not complete.
+
 import React, { memo, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import CustomHandle2 from './CustomHandle2';
 import { Position } from 'reactflow';
-import dynamic from "next/dynamic";
-const NoteEditor = dynamic(() => import("./blocknote/editor"), { ssr: false });
+
+
 
 function NoteNode({data}: {data: {title: string}}) {
     const [streamedText, setStreamedText] = useState('');

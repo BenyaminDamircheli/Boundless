@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import {OpenAI} from "openai"
 
 const openai = new OpenAI({
-    apiKey: 'sk-proj-fxy6JA8psNtnNZsHHxihT3BlbkFJqnQy7VPNj78kHdW0Iy1X',
+    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
 })
 
 const getQuickAnswer = async (query: string, context: string) => {

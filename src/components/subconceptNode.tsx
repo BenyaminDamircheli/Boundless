@@ -1,3 +1,5 @@
+// For a feature I am working on that I may add in the future. Not complete.
+
 import React, {useEffect, useState} from "react";
 import { Handle, Position } from "reactflow";
 import CustomHandle2 from "./CustomHandle2";

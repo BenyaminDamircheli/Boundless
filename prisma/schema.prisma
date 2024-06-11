@@ -23,7 +23,7 @@ model User {
 
 
 model Wiki {
-  id      String    @id @default(uuid())
+  id      String    @id @default("")
   title   String
   url     String
   nodes   Json[] @default([])

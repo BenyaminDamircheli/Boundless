@@ -1,15 +1,12 @@
 "use client"
 import React, { useEffect, useState } from "react";
-import Navbar1 from "@/components/sidebar";
-import { Input } from "@/components/ui/input";
-import { Network, Search } from "lucide-react";
 import Header from "@/components/header";
 import WikiSidebar from "@/components/wikiSidebar";
 import Wiki from "@/components/wiki";
 import WikiSearch from "@/components/searchwiki";
 import { useSearchParams } from "next/navigation";
-import { db } from "@/lib/db";
 import { useUser } from "@clerk/nextjs";
+import useLoading from '@/hooks/useLoading';
 
 type TocType = {
     nodes: any[];
@@ -77,7 +74,7 @@ function parseTOC(toc: string, query: string) {
 export default function WikiPage() {
     const [toc, setToc] = useState<TocType>({ nodes: [], edges: [] });
     const [quickAnswer, setQuickAnswer] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
+    const isLoading = useLoading();
     const searchParams = useSearchParams();
     const query = searchParams.get('q') || '';
     const [isOpen, setIsOpen] = useState(true);
@@ -94,7 +91,6 @@ export default function WikiPage() {
                 const cachedTOC = localStorage.getItem(`toc_${window.location}`);
                 if (cachedTOC) {
                     setToc(JSON.parse(cachedTOC));
-                    setIsLoading(false);
                     return;
                 } else {
                     const response = await fetch(`/api/getWiki?id=${id}`);
@@ -103,7 +99,6 @@ export default function WikiPage() {
                         console.log(data);
                         if (data.nodes) {
                             setToc({ nodes: data.nodes, edges: [] });
-                            setIsLoading(false);
                             return;
                         }
                     }
@@ -155,7 +150,6 @@ export default function WikiPage() {
                 const cachedQuickAnswer = localStorage.getItem(`quickAnswer_${window.location}`);
                 if (cachedQuickAnswer) {
                     setQuickAnswer(cachedQuickAnswer);
-                    setIsLoading(false);
                     return;
                 } else{
 
@@ -191,10 +185,8 @@ export default function WikiPage() {
         }
 
         if (query) {
-            setIsLoading(true);
             fetchData();
             fetchQuickAnswer();
-            setIsLoading(false);
         }
     }, [query, id]);
 

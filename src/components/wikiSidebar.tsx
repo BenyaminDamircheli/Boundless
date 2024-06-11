@@ -1,6 +1,5 @@
-import { ArrowLeftFromLine, ArrowRightFromLine, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { TracingBeam } from "./ui/tracingBeam";
 
 export default function WikiSidebar({ Nodes, query }: { Nodes:any, query: string}) {
   const [nodes, setNodes] = useState(Nodes);

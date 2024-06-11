@@ -18,7 +18,18 @@ export default function History({ isOpen, setIsOpen }: HistoryProps) {
         setHistory(data.map((wiki: any) => ({ 
             title: decodeURIComponent(wiki.url.split('search_context=').slice(1).join(' → ').split("id")[0].replace(/&/g, ' ')), 
             url: wiki.url,
-            date: new Date(Date.parse(wiki.createdAt)).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            date: (() => {
+                const createdAtDate = new Date(Date.parse(wiki.createdAt));
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(today.getDate() - 1);
+
+                if (createdAtDate.toDateString() === yesterday.toDateString()) {
+                    return "Yesterday";
+                } else {
+                    return createdAtDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                }
+            })()
         })))
     }
     useEffect(() => {

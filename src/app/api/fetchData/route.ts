@@ -4,7 +4,7 @@ import {OpenAI} from "openai"
 
 async function getTOC(query: string) {
     const openai = new OpenAI({
-        apiKey: 'sk-proj-fxy6JA8psNtnNZsHHxihT3BlbkFJqnQy7VPNj78kHdW0Iy1X',
+        apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
     });
 
     const stream = await openai.chat.completions.create({
@@ -30,7 +30,6 @@ async function getTOC(query: string) {
         
             - DO NOT INCLUDE ANY INTRODUCTION OR CONCLUSION SECTION IN THE TOC. JUST TECHNICAL CONCEPTS RELATING TO THE QUERY. 
         
-        
             - BE AS COMPREHENSIVE AS POSSIBLE. GIVE THE USER A BIG LIST OF ALL THE CONCEPTS THEY NEED TO KNOW.
         
             - THERE MUST BE MULTUPLE MAIN CONCEPTS AND SUBCONCEPTS, WHICH ALSO HAVE SUBCONCEPTS.
@@ -41,7 +40,7 @@ async function getTOC(query: string) {
             `
         }],
         temperature: 1,
-        max_tokens: 300,
+        max_tokens: 250,
         top_p: 1,
         frequency_penalty: 0,
         presence_penalty: 0,

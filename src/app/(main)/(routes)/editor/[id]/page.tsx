@@ -1,3 +1,4 @@
+// For a feature I am working on that I may add in the future. Not complete.
 "use client"
 import Dagre from '@dagrejs/dagre';
 import React, { useCallback, useState, useEffect, useRef, use } from "react";
@@ -6,7 +7,7 @@ import 'reactflow/dist/style.css';
 import { useSearchParams } from 'next/navigation';
 import InitialNode from "@/components/customNode";
 import NoteNode from "@/components/noteNode";
-import Navbar1 from "@/components/sidebar";
+
 import FlowTitle from "@/components/flowTitle";
 import SubConceptNode from "@/components/subconceptNode";
 import SubSubConceptNode from "@/components/subsubconcept";
