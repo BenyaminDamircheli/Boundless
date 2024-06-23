@@ -77,10 +77,10 @@ const Header = () => {
                           </div>
                           <div className="mt-2">
                             <p className="text-[13px]">
-                              Our <span className="font-bold">Turbo</span> model would use <a href="groq.com" className="hover:underline text-indigo-600">Groq's</a> LPU inference to give you results faster than the page even loads! Perfect for users who want to click through Boundless and find things visually.
+                              Our <span className="font-bold">Turbo</span> model would use <a href="groq.com" className="hover:underline text-indigo-600">Groq&apos;s</a> LPU inference to give you results faster than the page even loads! Perfect for users who want to click through Boundless and find things visually.
                             </p>
                             <p className="text-[13px] mt-2">
-                              Our <span className="font-bold">Research</span> model would be a combination of Anthropic's <a href="https://www.anthropic.com/claude" className="hover:underline text-indigo-600">Claude 3 Opus</a> and Open AI's <a href="https://openai.com/index/hello-gpt-4o/" className="hover:underline text-indigo-600">GPT 4o</a> to give you more accurate and thorough, research grade results.
+                              Our <span className="font-bold">Research</span> model would be a combination of Anthropic&apos;s <a href="https://www.anthropic.com/claude" className="hover:underline text-indigo-600">Claude 3 Opus</a> and Open AI&apos;s <a href="https://openai.com/index/hello-gpt-4o/" className="hover:underline text-indigo-600">GPT 4o</a> to give you more accurate and thorough, research grade results.
                             </p>
                           </div>
                         </div>
