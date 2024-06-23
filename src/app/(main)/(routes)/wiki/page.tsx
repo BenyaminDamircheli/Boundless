@@ -23,7 +23,7 @@ type TocType = {
     }>;
 };
 
-function parseTOC(toc: string, query: string) {
+function parseTOC(toc: string, query: string): TocType {
     const endMarker = "<END>";
     const lines = toc.split('\n').filter(line => line.trim().endsWith(endMarker));
     const nodes: any[] = [];
@@ -35,7 +35,7 @@ function parseTOC(toc: string, query: string) {
     lines.forEach((line) => {
         const cleanLine = line.replace(endMarker, '').trim();
         const level = (line.replace(endMarker, '').match(/^\s*/)?.[0].length ?? 0) / 4; // Adjusted for 4 spaces per level
-        const title = cleanLine.replace(/^\s*[-\d]+\.\s*/, '').replace(/^—/, '').replace(/^-/, '').replace(/^\s*-\s*/, '').replace(/^\s*\*\s*/, '').trim();
+        const title = cleanLine.replace(/^\s*[-\d]+\.\s*/, '').replace(/^/, '').replace(/^-/, '').replace(/^\s*-\s*/, '').replace(/^\s*\*\s*/, '').trim();
         
         const node: any = {
             id: nodeId.toString(),
@@ -84,7 +84,7 @@ function parseTOC(toc: string, query: string) {
 }
 
 export default function WikiPage() {
-    const [toc, setToc] = useState<TocType>({ nodes: [], edges: [] });
+    const [toc, setToc] = useState<TocType>({ nodes: [], edges: [] } as TocType);
     const [quickAnswer, setQuickAnswer] = useState('');
     const isLoading = useLoading();
     const searchParams = useSearchParams();
@@ -128,13 +128,13 @@ export default function WikiPage() {
                     const reader = response2.body?.getReader();
                     const decoder = new TextDecoder();
                     let content = '';
-                    let parsedTOC = { nodes: [], edges: [] };
+                    let parsedTOC: TocType = { nodes: [], edges: [] };
 
                     while (true) {
                         const { done, value } = await reader?.read() || {};
                         if (done) break;
                         content += decoder.decode(value, { stream: true });
-                        parsedTOC = parseTOC(content, query);
+                        parsedTOC = parseTOC(content, query) as TocType;
                         setToc(parsedTOC);
                     }
 
