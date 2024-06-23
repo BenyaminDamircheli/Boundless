@@ -9,8 +9,18 @@ import { useUser } from "@clerk/nextjs";
 import useLoading from '@/hooks/useLoading';
 
 type TocType = {
-    nodes: any[];
-    edges: any[];
+    nodes: Array<{
+        id: string;
+        data: {
+            title: string;
+            parentNode?: string;
+        };
+    }>;
+    edges: Array<{
+        id: string;
+        source: string;
+        target: string;
+    }>;
 };
 
 function parseTOC(toc: string, query: string) {
