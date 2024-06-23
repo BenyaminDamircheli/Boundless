@@ -1,6 +1,6 @@
 # Boundless - A learning engine
 
-Boundless is kind of like a wikipedia page for any topic you want, only more visual. Don't know what that means, watch this video:
+Boundless is kind of like a wikipedia page for any topic you want, only more visual. Don't know what that looks like? Watch this video:
 
 [![Boundless Demo Video](https://img.youtube.com/vi/zDD1lGYVsw0/0.jpg)](https://www.youtube.com/watch?v=zDD1lGYVsw0)
 

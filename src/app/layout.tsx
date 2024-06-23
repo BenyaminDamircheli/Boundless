@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Noto_Sans } from 'next/font/google';
-import { Bebas_Neue } from 'next/font/google';
 
 import "./globals.css";
 

@@ -1,19 +1,17 @@
 import { Download, Network, Search, X } from "lucide-react";
 import { Input } from "./ui/input";
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { v4 as uuidv4 } from 'uuid';
 import { useState } from "react";
 import {
     HoverCard,
     HoverCardContent,
     HoverCardTrigger,
-  } from "@/components/ui/hover-card"
+} from "@/components/ui/hover-card"
 import html2canvas from "html2canvas";
-import {jsPDF} from "jspdf";
+import { jsPDF } from "jspdf";
 
-
-export default function WikiSearch(){
+export default function WikiSearch() {
     const [inputValue, setInputValue] = useState('');
     const searchParams = useSearchParams();
     const search = searchParams.get('q');
@@ -24,6 +22,7 @@ export default function WikiSearch(){
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(event.target.value);
     };
+
     const onRemoveContext = (q: string) => {
         const filteredContext = query.filter((context) => context !== q);
         const updatedSearchContext = filteredContext.map(encodeURIComponent).join('&search_context=');
@@ -40,17 +39,15 @@ export default function WikiSearch(){
             const searchParams = new URLSearchParams(window.location.search);
             const existingSearchContexts = searchParams.getAll('search_context');
             const updatedSearchContexts = [...existingSearchContexts, searchQueryCap];
-            const searchId = uuidv4(); // Using UUID as a unique search ID
+            const searchId = uuidv4();
             const newUrl = `/wiki?q=${encodeURIComponent(searchQueryCap)}&search_context=${updatedSearchContexts.map(encodeURIComponent).join('&search_context=')}&id=${searchId}`;
             router.push(newUrl);
-            
-           
         }
     };
 
     function Capitalize(str: string) {
         return str.replace(/\b\w/g, (l) => l.toUpperCase());
-      }
+    }
 
     const onExport = async () => {
         const mainWikiElement = document.getElementById('main-wiki');
@@ -88,7 +85,8 @@ export default function WikiSearch(){
         router.refresh();
         router.push(newUrl);
     };
-    return(
+
+    return (
         <div className="flex justify-between items-center mr-14">
             <div className="flex flex-col items-center mx-14 mt-6 bg-white">
                 <div className="flex items-center space-x-2">
