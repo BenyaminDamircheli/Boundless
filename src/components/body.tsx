@@ -106,8 +106,8 @@ const Body = () => {
             <div className="grid grid-cols-3 gap-4 mt-4">
               {["Neural Networks", "American History", "Jet Engines", "Data Science", "Programming in Python", "Neuroscience"].map((suggestion) => (
                 <div
-                  key={suggestion}
-                  className="bg-neutral-100 h-8 rounded flex items-center justify-center font-bold text-sm border-[1px] border-neutral-700 hover:bg-neutral-200 cursor-pointer shadow-lg text-black"
+                  key={inputValue + suggestion}
+                  className="bg-neutral-100 h-8 rounded flex items-center justify-center font-bold text-center text-sm border-[1px] border-neutral-700 hover:bg-neutral-200 cursor-pointer shadow-lg text-black"
                   onClick={() => handleSuggestionClick(suggestion)}
                 >
                   {suggestion}
