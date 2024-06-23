@@ -1,37 +1,27 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Boundless - A learning engine
 
-## Getting Started
+Boundless is kind of like a wikipedia page for any topic you want, only more visual. Don't know what that means, watch this video:
 
-First, run the development server:
+<video width="320" height="240" controls>
+  <source src="boundless video - better.mp4" type="video/mp4">
+</video>
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+visit now at [boundless-learn.vercel.app](https://boundless-learn.vercel.app/)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# How does it work?
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The code is in this repository so here is how Boundless works on a high level:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+I take in a query from the user, and all past queries that they want to be included within the context of the search. I pass this to multiple LLMs (GPT-3.5 and GPT-4o) who both have tailored prompts and get back a table of contents and a summary of the concept. All further summaries and searches are generated using the same LLMs. I process these reponses and dynamically render the divs and concepts.
 
-## Learn More
+Images and sources are fetched by an awesome API called Tavilly AI, which is more for RAG and LLMs, but serves its purpose for me here fine. However, it is pretty expensive after a certain amount of usage, so an extention to this project would be to try and build my own version of it using the google custom search API.
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Why did I build this
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+Over the summer, I have been using LLMs to help me get get a table of concepts for stuff I want to learn in different areas of machine learning. I thought this was pretty powerful, but these systems didn't provide you a way to learn more about the concept on the internet. Sometimes, the concepts were pretty abstract so an image would've helped too. 
 
-## Deploy on Vercel
+I thought this combination would be pretty powerful if brought to life which is why I made Boundless.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
-# Boundless
+
