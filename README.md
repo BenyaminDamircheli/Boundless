@@ -2,10 +2,7 @@
 
 Boundless is kind of like a wikipedia page for any topic you want, only more visual. Don't know what that means, watch this video:
 
-<video width="320" height="240" controls>
-  <source src="boundless video - better.mp4" type="video/mp4">
-</video>
-
+[![Boundless Demo Video](https://www.youtube.com/watch?v=zDD1lGYVsw0)](https://www.youtube.com/watch?v=zDD1lGYVsw0)
 visit now at [boundless-learn.vercel.app](https://boundless-learn.vercel.app/)
 
 # How does it work?
