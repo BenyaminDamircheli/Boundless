@@ -249,7 +249,7 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
 
                 if (!hasChildren) {
                     return (
-                        <div id={`node-${node.id}`} key={node.id + "-" + level} style={{ minWidth: '150px', minHeight: '150px', marginTop: '0.5rem', marginLeft: '1.25rem', marginRight: '1.25rem' }} className="scroll-p-64 scroll-m-64 outline-offset-4 mb-4 target:outline target:outline-4 target:outline-indigo-500 bg-white transition-all duration-75 rounded-[2px] flex flex-col ">
+                        <div key={node.id + "-" + level} id={`node-${node.id}`} style={{ minWidth: '150px', minHeight: '150px', marginTop: '0.5rem', marginLeft: '1.25rem', marginRight: '1.25rem' }} className="scroll-p-64 scroll-m-64 outline-offset-4 mb-4 target:outline target:outline-4 target:outline-indigo-500 bg-white transition-all duration-75 rounded-[2px] flex flex-col ">
                             <div className="flex flex-col justify-between items-start">
                                 <button onClick={() => onClick(node.data.title)} className="transition-all duration-100 text-[0.8rem] font-medium pb-0.5 whitespace-pre-wrap pl-1 leading-[1] text-start text-black group">
                                     <span className="text-indigo-700 underline hidden group-hover:inline">deeper search on: </span>
@@ -300,7 +300,7 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
                 }
                 return (
                     <div id="parent-div">
-                        <div id={`node-${node.id}`} key={node.id} className={`bg-white relative w-fit h-fit mb-4 border shadow-sm rounded-[3px] mx-2 `}>
+                        <div key={node.id} id={`node-${node.id}`} className={`bg-white relative w-fit h-fit mb-4 border shadow-sm rounded-[3px] mx-2 `}>
                             <div style={{ top: 0 + level*25, zIndex: 18 - level }} className="scroll-p-32 scroll-m-32 outline-offset-4 sticky transition-colors duration-100 border-b-[1.5px] bg-zinc-100 border-neutral-200 flex flex-col w-full">
                                 <div className="flex flex-row items-end justify-between gap-1">
                                     <div className="flex flex-row items-center gap-1">
