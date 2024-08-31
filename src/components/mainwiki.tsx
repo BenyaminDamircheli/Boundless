@@ -15,7 +15,7 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
     const [newNode, setNewNode] = useState(null);
     const [dialogOpenStates, setDialogOpenStates] = useState<{ [key: string]: boolean }>({});
     const [nodeSummaries, setNodeSummaries] = useState<{ [key: string]: string }>({});
-    const [nodeResources, setNodeResources] = useState<{ [key: string]: string }>({});
+    const [nodeResources, setNodeResources] = useState<{ [key: string]: { id: string, title: string, url: string }[] }>({});
     const [searchCount, setSearchCount] = useState(0);
     const router = useRouter();
     const searchParams = useSearchParams();
