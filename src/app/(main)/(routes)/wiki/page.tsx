@@ -91,7 +91,7 @@ function parseTOC(toc: string, query: string): TocType {
     nodes.forEach((node) => {
         node.data.hasChildren = nodes.some((childNode) => childNode.data.parentNode === node.id);
     });
-    return { nodes, edges };
+    return { nodes, edges } as TocType;
 }
 
 export default function WikiPage() {
@@ -139,7 +139,7 @@ export default function WikiPage() {
                     const reader = response2.body?.getReader();
                     const decoder = new TextDecoder();
                     let content = '';
-                    parsedTOC = parseTOC(content, query);
+                    const parsedTOC: TocType = parseTOC(content, query);
                     setToc(parsedTOC);
 
                     await fetch('/api/saveWiki', {
