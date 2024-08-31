@@ -12,9 +12,11 @@ interface Node {
 interface WikiSidebarProps {
   Nodes: Node[];
   query: string;
+  isOpen: boolean;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function WikiSidebar({ Nodes, query }: WikiSidebarProps) {
+export default function WikiSidebar({ Nodes, query, isOpen, setIsOpen }: WikiSidebarProps) {
   const [nodes, setNodes] = useState<Node[]>(Nodes);
   const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
 
