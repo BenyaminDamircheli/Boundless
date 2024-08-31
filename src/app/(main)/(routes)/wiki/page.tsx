@@ -14,12 +14,23 @@ type TocType = {
         data: {
             title: string;
             parentNode?: string;
+            level: number;
+            pageTopic: string;
+            hasChildren: boolean;
         };
+        position: { x: number; y: number };
+        type: string;
     }>;
     edges: Array<{
         id: string;
         source: string;
         target: string;
+        style?: {
+            strokeWidth: number;
+            stroke: string;
+            zIndex: number;
+            markerStart?: string;
+        };
     }>;
 };
 
@@ -84,7 +95,7 @@ function parseTOC(toc: string, query: string): TocType {
 }
 
 export default function WikiPage() {
-    const [toc, setToc] = useState<TocType>({ nodes: [], edges: [] } as TocType);
+    const [toc, setToc] = useState<TocType>({ nodes: [], edges: [] });
     const [quickAnswer, setQuickAnswer] = useState('');
     const isLoading = useLoading();
     const searchParams = useSearchParams();
@@ -128,15 +139,8 @@ export default function WikiPage() {
                     const reader = response2.body?.getReader();
                     const decoder = new TextDecoder();
                     let content = '';
-                    let parsedTOC: TocType = { nodes: [], edges: [] };
-
-                    while (true) {
-                        const { done, value } = await reader?.read() || {};
-                        if (done) break;
-                        content += decoder.decode(value, { stream: true });
-                        parsedTOC = parseTOC(content, query) as TocType;
-                        setToc(parsedTOC);
-                    }
+                    parsedTOC = parseTOC(content, query);
+                    setToc(parsedTOC);
 
                     await fetch('/api/saveWiki', {
                         method: 'POST',
