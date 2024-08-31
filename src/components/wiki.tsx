@@ -4,7 +4,7 @@ import MainWiki from "./mainwiki";
 
 interface WikiProps {
   isSidebarOpen: boolean;
-  initialNodes: any;
+  initialNodes: any[];
   quickAnswer: string;
 }
 
