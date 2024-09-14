@@ -4,7 +4,7 @@ Boundless is kind of like a wikipedia page for any topic you want, only more vis
 
 [![Boundless Demo Video](https://img.youtube.com/vi/zDD1lGYVsw0/0.jpg)](https://www.youtube.com/watch?v=zDD1lGYVsw0)
 
-(Unfortunately, Boundless has now been taken down as it is too costly to run. I couldn't monetize it properly in time.)
+Thank you to everyone who has used Boundless! I got over 1.8k queries in 2 weeks, but it cost way more money than I expected. Now, I have limited the number of total queries to 50 per month. [Boundless](https://boundless-engine.vercel.app) will act as a demo for now.
 
 Here are also some screenshots of boundless at work:
 
