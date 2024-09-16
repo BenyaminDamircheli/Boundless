@@ -4,7 +4,7 @@ import { OpenAI } from "openai";
 
 async function getTOC(query: string) {
     const openai = new OpenAI({
-        apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+        apiKey: process.env.OPENAI_API_KEY,
     });
 
     const stream = await openai.chat.completions.create({
