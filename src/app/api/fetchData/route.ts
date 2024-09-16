@@ -65,6 +65,7 @@ export const POST = async (req: NextRequest) => {
         console.log("Returning cached data");
         return NextResponse.json({ nodes: existingWiki.nodes });
     }
+    
 
     const TOCStream = await getTOC(query);
 
