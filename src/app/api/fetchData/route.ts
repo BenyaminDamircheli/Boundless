@@ -45,7 +45,7 @@ async function getTOC(query: string) {
         presence_penalty: 0,
         stream: true,
     });
-
+    console.log(stream);
     return stream;
 }
 
@@ -65,7 +65,7 @@ export const POST = async (req: NextRequest) => {
         console.log("Returning cached data");
         return NextResponse.json({ nodes: existingWiki.nodes });
     }
-    
+
 
     const TOCStream = await getTOC(query);
 
@@ -79,6 +79,7 @@ export const POST = async (req: NextRequest) => {
             controller.close();
         }
     });
+    console.log(readableStream);
 
     return new Response(readableStream, {
         headers: {

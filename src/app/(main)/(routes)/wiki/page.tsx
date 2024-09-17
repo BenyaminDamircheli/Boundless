@@ -131,7 +131,7 @@ export default function WikiPage() {
                         },
                         body: JSON.stringify({ query: query, id: id }),
                     });
-
+                    console.log(response2.body);
                     if (!response2.ok) {
                         throw new Error('Network response was not ok');
                     }
@@ -139,7 +139,15 @@ export default function WikiPage() {
                     const reader = response2.body?.getReader();
                     const decoder = new TextDecoder();
                     let content = '';
-                    const parsedTOC: TocType = parseTOC(content, query);
+                    while (true) {
+                        const { done, value } = await reader?.read() || {};
+                        if (done) break;
+                        content += decoder.decode(value, { stream: true });
+                        const parsedTOC = parseTOC(content, query);
+                        setToc(parsedTOC);
+                    }
+                    const parsedTOC = parseTOC(content, query);
+                    console.log("parsedTOC", parsedTOC);
                     setToc(parsedTOC);
 
                     await fetch('/api/saveWiki', {
@@ -184,7 +192,7 @@ export default function WikiPage() {
                         const { done, value } = await reader?.read() || {};
                         if (done) break;
                         content += decoder.decode(value, { stream: true });
-                        setQuickAnswer(content); // Update quickAnswer state with each chunk
+                        setQuickAnswer(content);
                     }
 
                     localStorage.setItem(`quickAnswer_${window.location}`, content);

@@ -81,7 +81,7 @@ export default function MainWiki({ nodes }: { nodes: any[] }) {
                                 "Content-Type": "application/json",
                             },
                             body: JSON.stringify({
-                                api_key: process.env.TAVILY_API_KEY,
+                                api_key: process.env.NEXT_PUBLIC_TAVILY_API_KEY,
                                 query: `${node.data.title} as it relates to ${node.data.parentTitle} and ${context}`,
                                 search_depth: "basic",
                                 include_answer: false,
